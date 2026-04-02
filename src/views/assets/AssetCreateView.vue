@@ -1,10 +1,11 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createAsset } from '../../stores/assetStore'
 import { categoryItems } from '../../stores/categoryStore'
 
 const router = useRouter()
+const errorMessage = ref('')
 
 const form = reactive({
   asset_name: '',
@@ -16,9 +17,15 @@ const form = reactive({
   qr_code: '',
 })
 
-const submitForm = () => {
-  createAsset(form)
-  router.push('/assets')
+const submitForm = async () => {
+  errorMessage.value = ''
+
+  try {
+    await createAsset(form)
+    router.push('/assets')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -29,6 +36,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Create New Asset</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <form class="form-card panel" @submit.prevent="submitForm">
       <div class="form-grid">
@@ -116,6 +125,15 @@ const submitForm = () => {
   font-size: 24px;
   font-weight: 700;
   color: #404040;
+}
+
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .form-card {

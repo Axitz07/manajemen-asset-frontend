@@ -11,9 +11,9 @@ const loan = computed(() => getLoans().find((item) => item.loan_id === Number(ro
 
 const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
 
-const submitReturn = () => {
+const submitReturn = async () => {
   if (!loan.value) return
-  returnLoan(loan.value.loan_id)
+  await returnLoan(loan.value.loan_id)
   router.push('/loans')
 }
 </script>

@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { findCategoryById, updateCategory } from '../../stores/categoryStore'
 
@@ -7,11 +7,19 @@ const route = useRoute()
 const router = useRouter()
 const category = findCategoryById(route.params.id)
 const form = reactive({ category_name: category?.category_name ?? '' })
+const errorMessage = ref('')
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!category) return
-  updateCategory(route.params.id, form)
-  router.push('/categories')
+
+  errorMessage.value = ''
+
+  try {
+    await updateCategory(route.params.id, form)
+    router.push('/categories')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -22,6 +30,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Edit Category</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <div v-if="!category" class="not-found panel">
       <p>Kategori tidak ditemukan.</p>
@@ -48,6 +58,7 @@ const submitForm = () => {
 .breadcrumb, .page-title, .not-found p { margin: 0; }
 .breadcrumb { font-size: 14px; font-weight: 600; color: #737373; }
 .page-title { font-size: 24px; font-weight: 700; color: #404040; }
+.notice { margin: 0; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
 .form-card, .not-found { display: grid; gap: 24px; padding: 24px; }
 .field { display: grid; gap: 8px; font-weight: 700; color: #404040; }
 .field input { min-height: 44px; padding: 0 14px; border: 1px solid #d4d4d4; border-radius: 8px; }

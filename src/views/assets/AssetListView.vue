@@ -36,9 +36,9 @@ const conditionTone = (condition) => {
   return 'danger'
 }
 
-const removeAsset = (assetId) => {
+const removeAsset = async (assetId) => {
   if (!window.confirm('Hapus asset ini?')) return
-  deleteAsset(assetId)
+  await deleteAsset(assetId)
 }
 </script>
 

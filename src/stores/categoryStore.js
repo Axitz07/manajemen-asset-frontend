@@ -1,39 +1,44 @@
-import { createPersistedCollection } from '../lib/persistedCollection'
-import { categories as categorySeeds } from '../services/mockDatabase'
+import { ref } from 'vue'
+import { apiRequest } from '../lib/api'
 
-const categoryCollection = createPersistedCollection('manajemen-asset:categories', categorySeeds)
+export const categoryItems = ref([])
 
-export const categoryItems = categoryCollection.items
+export async function loadCategories() {
+  const response = await apiRequest('categories?limit=1000')
+  categoryItems.value = response.data || []
+  return categoryItems.value
+}
 
-export function createCategory(payload) {
-  const newItem = {
-    category_id: categoryCollection.getNextId('category_id'),
-    category_name: payload.category_name,
-    created_at: new Date().toISOString().slice(0, 10),
-  }
+export async function createCategory(payload) {
+  const newItem = await apiRequest('categories', {
+    method: 'POST',
+    body: JSON.stringify({
+      category_name: payload.category_name,
+    }),
+  })
 
-  categoryCollection.setItems([...categoryItems.value, newItem])
+  categoryItems.value = [...categoryItems.value, newItem]
   return newItem
 }
 
-export function updateCategory(categoryId, payload) {
-  const targetId = Number(categoryId)
+export async function updateCategory(categoryId, payload) {
+  const updatedItem = await apiRequest(`categories/${categoryId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      category_name: payload.category_name,
+    }),
+  })
 
-  categoryCollection.setItems(
-    categoryItems.value.map((item) =>
-      item.category_id === targetId
-        ? {
-            ...item,
-            category_name: payload.category_name,
-          }
-        : item,
-    ),
+  categoryItems.value = categoryItems.value.map((item) =>
+    item.category_id === Number(categoryId) ? { ...item, ...updatedItem } : item,
   )
+
+  return updatedItem
 }
 
-export function deleteCategory(categoryId) {
-  const targetId = Number(categoryId)
-  categoryCollection.setItems(categoryItems.value.filter((item) => item.category_id !== targetId))
+export async function deleteCategory(categoryId) {
+  await apiRequest(`categories/${categoryId}`, { method: 'DELETE' })
+  categoryItems.value = categoryItems.value.filter((item) => item.category_id !== Number(categoryId))
 }
 
 export function findCategoryById(categoryId) {

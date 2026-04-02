@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { findAssetById, updateAsset } from '../../stores/assetStore'
 import { categoryItems } from '../../stores/categoryStore'
@@ -7,6 +7,7 @@ import { categoryItems } from '../../stores/categoryStore'
 const route = useRoute()
 const router = useRouter()
 const asset = findAssetById(route.params.id)
+const errorMessage = ref('')
 
 const form = reactive({
   asset_name: asset?.asset_name ?? '',
@@ -18,10 +19,17 @@ const form = reactive({
   qr_code: asset?.qr_code ?? '',
 })
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!asset) return
-  updateAsset(route.params.id, form)
-  router.push('/assets')
+
+  errorMessage.value = ''
+
+  try {
+    await updateAsset(route.params.id, form)
+    router.push('/assets')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -32,6 +40,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Edit Asset</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <div v-if="!asset" class="not-found panel">
       <p>Asset tidak ditemukan.</p>
@@ -125,6 +135,15 @@ const submitForm = () => {
   font-size: 24px;
   font-weight: 700;
   color: #404040;
+}
+
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .form-card,

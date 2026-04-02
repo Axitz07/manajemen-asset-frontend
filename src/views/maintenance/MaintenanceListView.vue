@@ -11,9 +11,9 @@ const doneTickets = computed(() => maintenances.value.filter((item) => item.main
 
 const statusTone = (status) => (status === 'Done' ? 'success' : 'warning')
 
-const removeMaintenance = (maintenanceId) => {
+const removeMaintenance = async (maintenanceId) => {
   if (!window.confirm('Hapus data maintenance ini?')) return
-  deleteMaintenance(maintenanceId)
+  await deleteMaintenance(maintenanceId)
 }
 </script>
 

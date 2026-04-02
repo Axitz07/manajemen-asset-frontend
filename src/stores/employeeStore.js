@@ -1,43 +1,48 @@
-import { createPersistedCollection } from '../lib/persistedCollection'
-import { employees as employeeSeeds } from '../services/mockDatabase'
+import { ref } from 'vue'
+import { apiRequest } from '../lib/api'
 
-const employeeCollection = createPersistedCollection('manajemen-asset:employees', employeeSeeds)
+export const employeeItems = ref([])
 
-export const employeeItems = employeeCollection.items
+export async function loadEmployees() {
+  const response = await apiRequest('employees?limit=1000')
+  employeeItems.value = response.data || []
+  return employeeItems.value
+}
 
-export function createEmployee(payload) {
-  const newItem = {
-    employee_id: employeeCollection.getNextId('employee_id'),
-    employee_name: payload.employee_name,
-    email: payload.email,
-    phone: payload.phone,
-    created_at: new Date().toISOString().slice(0, 10),
-  }
+export async function createEmployee(payload) {
+  const newItem = await apiRequest('employees', {
+    method: 'POST',
+    body: JSON.stringify({
+      employee_name: payload.employee_name,
+      email: payload.email,
+      phone: payload.phone,
+    }),
+  })
 
-  employeeCollection.setItems([...employeeItems.value, newItem])
+  employeeItems.value = [...employeeItems.value, newItem]
   return newItem
 }
 
-export function updateEmployee(employeeId, payload) {
-  const targetId = Number(employeeId)
+export async function updateEmployee(employeeId, payload) {
+  const updatedItem = await apiRequest(`employees/${employeeId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      employee_name: payload.employee_name,
+      email: payload.email,
+      phone: payload.phone,
+    }),
+  })
 
-  employeeCollection.setItems(
-    employeeItems.value.map((item) =>
-      item.employee_id === targetId
-        ? {
-            ...item,
-            employee_name: payload.employee_name,
-            email: payload.email,
-            phone: payload.phone,
-          }
-        : item,
-    ),
+  employeeItems.value = employeeItems.value.map((item) =>
+    item.employee_id === Number(employeeId) ? { ...item, ...updatedItem } : item,
   )
+
+  return updatedItem
 }
 
-export function deleteEmployee(employeeId) {
-  const targetId = Number(employeeId)
-  employeeCollection.setItems(employeeItems.value.filter((item) => item.employee_id !== targetId))
+export async function deleteEmployee(employeeId) {
+  await apiRequest(`employees/${employeeId}`, { method: 'DELETE' })
+  employeeItems.value = employeeItems.value.filter((item) => item.employee_id !== Number(employeeId))
 }
 
 export function findEmployeeById(employeeId) {

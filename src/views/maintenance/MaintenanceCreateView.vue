@@ -18,11 +18,11 @@ const form = reactive({
   maintenance_status: 'Repairing',
 })
 
-const submitForm = () => {
+const submitForm = async () => {
   errorMessage.value = ''
 
   try {
-    createMaintenance(form)
+    await createMaintenance(form)
     router.push('/maintenance')
   } catch (error) {
     errorMessage.value = error.message

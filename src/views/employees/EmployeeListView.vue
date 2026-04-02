@@ -8,9 +8,9 @@ import { getEmployees } from '../../services/employeeService'
 const employees = computed(() => getEmployees())
 const activeBorrowers = computed(() => employees.value.filter((item) => item.active_loans > 0).length)
 
-const removeEmployee = (employeeId) => {
+const removeEmployee = async (employeeId) => {
   if (!window.confirm('Hapus employee ini?')) return
-  deleteEmployee(employeeId)
+  await deleteEmployee(employeeId)
 }
 </script>
 

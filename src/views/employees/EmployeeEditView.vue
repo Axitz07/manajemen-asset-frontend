@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { findEmployeeById, updateEmployee } from '../../stores/employeeStore'
 
@@ -11,11 +11,19 @@ const form = reactive({
   email: employee?.email ?? '',
   phone: employee?.phone ?? '',
 })
+const errorMessage = ref('')
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!employee) return
-  updateEmployee(route.params.id, form)
-  router.push('/employees')
+
+  errorMessage.value = ''
+
+  try {
+    await updateEmployee(route.params.id, form)
+    router.push('/employees')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -26,6 +34,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Edit Employee</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <div v-if="!employee" class="not-found panel">
       <p>Employee tidak ditemukan.</p>
@@ -62,6 +72,7 @@ const submitForm = () => {
 .breadcrumb, .page-title, .not-found p { margin: 0; }
 .breadcrumb { font-size: 14px; font-weight: 600; color: #737373; }
 .page-title { font-size: 24px; font-weight: 700; color: #404040; }
+.notice { margin: 0; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
 .form-card, .not-found { display: grid; gap: 24px; padding: 24px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .field { display: grid; gap: 8px; font-weight: 700; color: #404040; }

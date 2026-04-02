@@ -15,9 +15,9 @@ const totalAssets = computed(() =>
   categories.value.reduce((total, item) => total + item.total_assets, 0),
 )
 
-const removeCategory = (categoryId) => {
+const removeCategory = async (categoryId) => {
   if (!window.confirm('Hapus kategori ini?')) return
-  deleteCategory(categoryId)
+  await deleteCategory(categoryId)
 }
 </script>
 

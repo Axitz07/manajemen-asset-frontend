@@ -12,9 +12,9 @@ const returnedLoans = computed(() => loans.value.filter((item) => item.status ==
 
 const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
 
-const removeLoan = (loanId) => {
+const removeLoan = async (loanId) => {
   if (!window.confirm('Hapus transaksi loan ini?')) return
-  deleteLoan(loanId)
+  await deleteLoan(loanId)
 }
 </script>
 
@@ -70,7 +70,7 @@ const removeLoan = (loanId) => {
               <td>{{ item.loan_date }}</td>
               <td>{{ item.return_date || '-' }}</td>
               <td><AppBadge :label="item.status" :tone="statusTone(item.status)" /></td>
-              <td>{{ item.note }}</td>
+              <td>{{ item.note || '-' }}</td>
               <td>
                 <div class="action-group">
                   <RouterLink

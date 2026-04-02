@@ -22,11 +22,11 @@ const form = reactive({
   note: '',
 })
 
-const submitForm = () => {
+const submitForm = async () => {
   errorMessage.value = ''
 
   try {
-    createLoan(form)
+    await createLoan(form)
     router.push('/loans')
   } catch (error) {
     errorMessage.value = error.message

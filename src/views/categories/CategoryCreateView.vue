@@ -1,14 +1,21 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createCategory } from '../../stores/categoryStore'
 
 const router = useRouter()
 const form = reactive({ category_name: '' })
+const errorMessage = ref('')
 
-const submitForm = () => {
-  createCategory(form)
-  router.push('/categories')
+const submitForm = async () => {
+  errorMessage.value = ''
+
+  try {
+    await createCategory(form)
+    router.push('/categories')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -19,6 +26,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Create Category</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <form class="form-card panel" @submit.prevent="submitForm">
       <label class="field">
@@ -40,6 +49,7 @@ const submitForm = () => {
 .breadcrumb, .page-title { margin: 0; }
 .breadcrumb { font-size: 14px; font-weight: 600; color: #737373; }
 .page-title { font-size: 24px; font-weight: 700; color: #404040; }
+.notice { margin: 0; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
 .form-card { display: grid; gap: 24px; padding: 24px; }
 .field { display: grid; gap: 8px; font-weight: 700; color: #404040; }
 .field input { min-height: 44px; padding: 0 14px; border: 1px solid #d4d4d4; border-radius: 8px; }

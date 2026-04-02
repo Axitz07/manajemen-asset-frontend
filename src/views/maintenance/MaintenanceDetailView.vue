@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { findMaintenanceById, updateMaintenance } from '../../stores/maintenanceStore'
 import { getAssets } from '../../services/assetService'
@@ -10,15 +10,24 @@ const maintenance = findMaintenanceById(route.params.id)
 const asset = getAssets().find((item) => item.asset_id === maintenance?.asset_id) ?? null
 
 const form = reactive({
+  asset_id: maintenance?.asset_id ?? '',
   issue_description: maintenance?.issue_description ?? '',
   maintenance_date: maintenance?.maintenance_date ?? new Date().toISOString().slice(0, 10),
   maintenance_status: maintenance?.maintenance_status ?? 'Repairing',
 })
+const errorMessage = ref('')
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!maintenance) return
-  updateMaintenance(maintenance.maintenance_id, form)
-  router.push('/maintenance')
+
+  errorMessage.value = ''
+
+  try {
+    await updateMaintenance(maintenance.maintenance_id, form)
+    router.push('/maintenance')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -29,6 +38,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Maintenance Detail</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <div v-if="!maintenance" class="not-found panel">
       <p>Data maintenance tidak ditemukan.</p>
@@ -79,6 +90,7 @@ const submitForm = () => {
 .breadcrumb, .page-title, .not-found p, .info-text { margin: 0; }
 .breadcrumb { font-size: 14px; font-weight: 600; color: #737373; }
 .page-title { font-size: 24px; font-weight: 700; color: #404040; }
+.notice { margin: 0; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
 .form-card, .not-found { display: grid; gap: 24px; padding: 24px; }
 .summary-card { display: grid; gap: 8px; padding: 16px; border: 1px solid #dbe4ee; border-radius: 12px; background: #fafafa; }
 .summary-card span, .info-text { color: #64748b; }

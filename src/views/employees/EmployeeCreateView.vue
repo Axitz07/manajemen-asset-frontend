@@ -1,18 +1,25 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createEmployee } from '../../stores/employeeStore'
 
 const router = useRouter()
+const errorMessage = ref('')
 const form = reactive({
   employee_name: '',
   email: '',
   phone: '',
 })
 
-const submitForm = () => {
-  createEmployee(form)
-  router.push('/employees')
+const submitForm = async () => {
+  errorMessage.value = ''
+
+  try {
+    await createEmployee(form)
+    router.push('/employees')
+  } catch (error) {
+    errorMessage.value = error.message
+  }
 }
 </script>
 
@@ -23,6 +30,8 @@ const submitForm = () => {
     </div>
 
     <h1 class="page-title">Create Employee</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <form class="form-card panel" @submit.prevent="submitForm">
       <div class="form-grid">
@@ -54,6 +63,7 @@ const submitForm = () => {
 .breadcrumb, .page-title { margin: 0; }
 .breadcrumb { font-size: 14px; font-weight: 600; color: #737373; }
 .page-title { font-size: 24px; font-weight: 700; color: #404040; }
+.notice { margin: 0; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
 .form-card { display: grid; gap: 24px; padding: 24px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .field { display: grid; gap: 8px; font-weight: 700; color: #404040; }

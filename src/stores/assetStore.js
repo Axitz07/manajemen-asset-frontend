@@ -1,79 +1,68 @@
-import { createPersistedCollection } from '../lib/persistedCollection'
-import { assets as assetSeeds } from '../services/mockDatabase'
-import { recordHistory } from './historyStore'
+import { ref } from 'vue'
+import { apiRequest } from '../lib/api'
 
-const assetCollection = createPersistedCollection('manajemen-asset:assets', assetSeeds)
+export const assetItems = ref([])
 
-export const assetItems = assetCollection.items
+export async function loadAssets() {
+  const response = await apiRequest('assets?limit=1000')
+  assetItems.value = response.data || []
+  return assetItems.value
+}
 
-export function createAsset(payload) {
-  const nextId = assetCollection.getNextId('asset_id')
-  const assetCode = payload.asset_code?.trim() || `AST-${String(nextId).padStart(3, '0')}`
+export async function createAsset(payload) {
+  const newItem = await apiRequest('assets', {
+    method: 'POST',
+    body: JSON.stringify({
+      asset_code: payload.asset_code?.trim() || `AST-${Date.now()}`,
+      asset_name: payload.asset_name,
+      category_id: Number(payload.category_id),
+      purchase_year: Number(payload.purchase_year),
+      condition: payload.condition,
+      status: payload.status,
+      qr_code: payload.qr_code?.trim() || '',
+      asset_image: payload.asset_image || '',
+    }),
+  })
 
-  const newItem = {
-    asset_id: nextId,
-    asset_code: assetCode,
-    asset_name: payload.asset_name,
-    category_id: Number(payload.category_id),
-    purchase_year: Number(payload.purchase_year),
-    condition: payload.condition,
-    status: payload.status,
-    qr_code: payload.qr_code?.trim() || `QR-${assetCode}`,
-    asset_image: payload.asset_image || '',
-    created_at: new Date().toISOString().slice(0, 10),
-  }
-
-  assetCollection.setItems([...assetItems.value, newItem])
-  recordHistory(newItem.asset_id, '-', newItem.status, `${newItem.asset_name} berhasil ditambahkan ke inventory.`)
+  assetItems.value = [...assetItems.value, newItem]
   return newItem
 }
 
-export function updateAsset(assetId, payload) {
-  const targetId = Number(assetId)
-  const currentItem = assetItems.value.find((item) => item.asset_id === targetId)
-
-  assetCollection.setItems(
-    assetItems.value.map((item) => {
-      if (item.asset_id !== targetId) return item
-
-      const assetCode = payload.asset_code?.trim() || item.asset_code
-
-      return {
-        ...item,
-        asset_code: assetCode,
-        asset_name: payload.asset_name,
-        category_id: Number(payload.category_id),
-        purchase_year: Number(payload.purchase_year),
-        condition: payload.condition,
-        status: payload.status,
-        qr_code: payload.qr_code?.trim() || item.qr_code || `QR-${assetCode}`,
-      }
+export async function updateAsset(assetId, payload) {
+  const updatedItem = await apiRequest(`assets/${assetId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      asset_code: payload.asset_code?.trim() || '',
+      asset_name: payload.asset_name,
+      category_id: Number(payload.category_id),
+      purchase_year: Number(payload.purchase_year),
+      condition: payload.condition,
+      status: payload.status,
+      qr_code: payload.qr_code?.trim() || '',
+      asset_image: payload.asset_image || '',
     }),
+  })
+
+  assetItems.value = assetItems.value.map((item) =>
+    item.asset_id === Number(assetId) ? { ...item, ...updatedItem } : item,
   )
 
-  if (currentItem && currentItem.status !== payload.status) {
-    recordHistory(targetId, currentItem.status, payload.status, `${payload.asset_name} diperbarui secara manual.`)
-  }
+  return updatedItem
 }
 
-export function updateAssetStatus(assetId, status) {
-  const targetId = Number(assetId)
+export async function updateAssetStatus(assetId, status) {
+  const asset = findAssetById(assetId)
+  if (!asset) return null
 
-  assetCollection.setItems(
-    assetItems.value.map((item) =>
-      item.asset_id === targetId
-        ? {
-            ...item,
-            status,
-          }
-        : item,
-    ),
-  )
+  return updateAsset(assetId, {
+    ...asset,
+    status,
+  })
 }
 
-export function deleteAsset(assetId) {
-  const targetId = Number(assetId)
-  assetCollection.setItems(assetItems.value.filter((item) => item.asset_id !== targetId))
+export async function deleteAsset(assetId) {
+  await apiRequest(`assets/${assetId}`, { method: 'DELETE' })
+  assetItems.value = assetItems.value.filter((item) => item.asset_id !== Number(assetId))
 }
 
 export function findAssetById(assetId) {

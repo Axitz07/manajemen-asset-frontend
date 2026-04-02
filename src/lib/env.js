@@ -23,6 +23,7 @@ export const appConfig = {
   basePath: normalizeBasePath(import.meta.env.VITE_APP_BASE_PATH ?? import.meta.env.BASE_URL ?? '/'),
   defaultRoute: normalizeRoutePath(import.meta.env.VITE_APP_DEFAULT_ROUTE ?? '/dashboard'),
   useMockData: String(import.meta.env.VITE_USE_MOCK_DATA || 'true') === 'true',
+  apiBaseUrl: String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/+$/, ''),
 }
 
 export function withBasePath(path = '/') {
