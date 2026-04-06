@@ -18,4 +18,8 @@
   --shadow-soft: 0 4px 6px -4px rgba(64, 63, 67, 0.06), 0 10px 15px -3px rgba(64, 63, 67, 0.06);
   --font-body: 'Nunito Sans', 'Segoe UI', sans-serif;
   --font-heading: 'Nunito Sans', 'Segoe UI', sans-serif;
+  --shell-max: 1440px;
+  --shell-content-max: 1376px;
+  --shell-padding: clamp(14px, 2.8vw, 32px);
+  --shell-padding-mobile: 14px;
 }

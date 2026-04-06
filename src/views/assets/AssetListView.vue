@@ -61,9 +61,6 @@ const removeAsset = async (assetId) => {
         </label>
 
         <div class="toolbar-actions">
-          <RouterLink to="/categories" class="btn-secondary btn-link">Manage Categories</RouterLink>
-          <RouterLink to="/employees" class="btn-secondary btn-link">Manage Employees</RouterLink>
-          <RouterLink to="/history" class="btn-secondary btn-link">View History</RouterLink>
           <button type="button" class="btn-secondary">Export Assets</button>
           <RouterLink to="/assets/create" class="btn-primary btn-link">Add New Asset</RouterLink>
         </div>
@@ -129,27 +126,16 @@ const removeAsset = async (assetId) => {
         </table>
       </div>
 
-      <div class="split-grid">
-        <article class="sub-card">
-          <h3>Assets Needing Attention</h3>
-          <div v-for="item in attentionAssets" :key="item.asset_id" class="list-row">
-            <div>
-              <strong>{{ item.asset_name }}</strong>
-              <p>{{ item.asset_code }} • {{ item.category_name }}</p>
-            </div>
-            <AppBadge :label="item.status" :tone="statusTone(item.status)" />
+      <article class="sub-card">
+        <h3>Assets Needing Attention</h3>
+        <div v-for="item in attentionAssets" :key="item.asset_id" class="list-row">
+          <div>
+            <strong>{{ item.asset_name }}</strong>
+            <p>{{ item.asset_code }} • {{ item.category_name }}</p>
           </div>
-        </article>
-
-        <article class="sub-card">
-          <h3>Inventory Notes</h3>
-          <ul class="notes-list">
-            <li>Gunakan QR code untuk pencarian cepat saat serah terima asset.</li>
-            <li>Asset dengan kondisi rusak ringan diarahkan ke maintenance lebih dulu.</li>
-            <li>Data pengguna aktif membantu admin saat proses audit inventaris.</li>
-          </ul>
-        </article>
-      </div>
+          <AppBadge :label="item.status" :tone="statusTone(item.status)" />
+        </div>
+      </article>
     </section>
   </section>
 </template>
@@ -195,16 +181,12 @@ const removeAsset = async (assetId) => {
   padding: 20px;
 }
 
-.toolbar,
-.split-grid,
-.stats-grid {
-  display: grid;
-  gap: 16px;
-}
-
 .toolbar {
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid #d4d4d4;
 }
@@ -267,16 +249,19 @@ const removeAsset = async (assetId) => {
   color: #404040;
 }
 
-.stats-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
 .metric-box,
 .sub-card {
+  flex: 1 1 220px;
   padding: 16px;
   border: 1px solid #dbe4ee;
   border-radius: 12px;
   background: #fafafa;
+}
+
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .metric-box span,
@@ -341,13 +326,8 @@ const removeAsset = async (assetId) => {
   color: var(--danger);
 }
 
-.split-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .sub-card h3,
-.sub-card strong,
-.notes-list {
+.sub-card strong {
   margin: 0;
 }
 
@@ -368,15 +348,6 @@ const removeAsset = async (assetId) => {
   padding-top: 16px;
 }
 
-.notes-list {
-  padding-left: 18px;
-  color: #64748b;
-}
-
-.notes-list li + li {
-  margin-top: 10px;
-}
-
 .empty-state {
   text-align: center;
   color: #94a3b8;
@@ -387,14 +358,9 @@ const removeAsset = async (assetId) => {
     padding-inline: 0;
   }
 
-  .toolbar,
-  .stats-grid,
-  .split-grid {
-    grid-template-columns: 1fr;
-  }
-
   .toolbar-actions {
-    display: grid;
+    display: flex;
+    flex-direction: column;
   }
 
   .table-shell {

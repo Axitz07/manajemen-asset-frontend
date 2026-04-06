@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAssets } from '../../services/assetService'
 import { getEmployees } from '../../services/employeeService'
@@ -11,6 +11,7 @@ const errorMessage = ref('')
 
 const availableAssets = computed(() => getAssets().filter((item) => item.status === 'Available'))
 const employees = computed(() => getEmployees())
+const canSubmit = computed(() => availableAssets.value.length > 0 && employees.value.length > 0)
 
 const defaultAsset =
   availableAssets.value.find((item) => item.asset_id === Number(route.query.asset_id)) ?? availableAssets.value[0]
@@ -22,8 +23,41 @@ const form = reactive({
   note: '',
 })
 
+watch(
+  availableAssets,
+  (items) => {
+    const requestedAssetId = Number(route.query.asset_id)
+    const requestedAsset = items.find((item) => item.asset_id === requestedAssetId)
+
+    if (!form.asset_id || !items.some((item) => item.asset_id === Number(form.asset_id))) {
+      form.asset_id = requestedAsset?.asset_id ?? items[0]?.asset_id ?? ''
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  employees,
+  (items) => {
+    if (!form.employee_id || !items.some((item) => item.employee_id === Number(form.employee_id))) {
+      form.employee_id = items[0]?.employee_id ?? ''
+    }
+  },
+  { immediate: true },
+)
+
 const submitForm = async () => {
   errorMessage.value = ''
+
+  if (!availableAssets.value.length) {
+    errorMessage.value = 'Belum ada asset berstatus Available untuk dipinjam.'
+    return
+  }
+
+  if (!employees.value.length) {
+    errorMessage.value = 'Tambahkan employee terlebih dahulu sebelum membuat loan.'
+    return
+  }
 
   try {
     await createLoan(form)
@@ -59,6 +93,7 @@ const submitForm = async () => {
         <label class="field">
           <span>Employee</span>
           <select v-model="form.employee_id" required>
+            <option v-if="!employees.length" value="">Belum ada employee tersedia</option>
             <option v-for="item in employees" :key="item.employee_id" :value="item.employee_id">
               {{ item.employee_name }}
             </option>
@@ -78,7 +113,7 @@ const submitForm = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/loans')">Cancel</button>
-        <button type="submit" class="btn-primary" :disabled="!availableAssets.length">Save Loan</button>
+        <button type="submit" class="btn-primary" :disabled="!canSubmit">Save Loan</button>
       </div>
     </form>
   </section>

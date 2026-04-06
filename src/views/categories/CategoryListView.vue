@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import SupportNav from '../../components/common/SupportNav.vue'
 import { deleteCategory } from '../../stores/categoryStore'
 import { getCategories } from '../../services/categoryService'
 
@@ -28,8 +27,6 @@ const removeCategory = async (categoryId) => {
     </div>
 
     <h1 class="page-title">Asset Categories</h1>
-
-    <SupportNav />
 
     <section class="card-shell panel">
       <div class="toolbar">
@@ -63,7 +60,6 @@ const removeCategory = async (categoryId) => {
               <th>CATEGORY NAME</th>
               <th>TOTAL ASSETS</th>
               <th>CREATED AT</th>
-              <th>SHARE</th>
               <th>ACTIONS</th>
             </tr>
           </thead>
@@ -72,7 +68,6 @@ const removeCategory = async (categoryId) => {
               <td>{{ item.category_name }}</td>
               <td>{{ item.total_assets }}</td>
               <td>{{ item.created_at }}</td>
-              <td>{{ totalAssets ? Math.round((item.total_assets / totalAssets) * 100) : 0 }}%</td>
               <td>
                 <div class="action-group">
                   <RouterLink :to="`/categories/${item.category_id}/edit`" class="action-link edit">Edit</RouterLink>
@@ -85,15 +80,6 @@ const removeCategory = async (categoryId) => {
           </tbody>
         </table>
       </div>
-
-      <article class="sub-card">
-        <h3>Category Planning Notes</h3>
-        <ul class="notes-list">
-          <li>Pastikan penamaan kategori konsisten agar filter data asset tetap bersih.</li>
-          <li>Kategori dengan jumlah tertinggi sebaiknya dipantau untuk kebutuhan procurement.</li>
-          <li>Gunakan kategori sebagai dasar laporan distribusi dan penggunaan aset.</li>
-        </ul>
-      </article>
     </section>
   </section>
 </template>
@@ -118,12 +104,8 @@ const removeCategory = async (categoryId) => {
   border-bottom: 1px solid #d4d4d4;
 }
 
-.breadcrumb,
-.notes-list {
-  margin: 0;
-}
-
 .breadcrumb {
+  margin: 0;
   font-size: 14px;
   font-weight: 600;
   color: #737373;
@@ -144,8 +126,9 @@ const removeCategory = async (categoryId) => {
 }
 
 .toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   padding-bottom: 16px;
@@ -162,21 +145,20 @@ const removeCategory = async (categoryId) => {
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
-.metric-box,
-.sub-card {
+.metric-box {
+  flex: 1 1 220px;
   padding: 16px;
   border: 1px solid #dbe4ee;
   border-radius: 12px;
   background: #fafafa;
 }
 
-.metric-box span,
-.notes-list {
+.metric-box span {
   color: #64748b;
 }
 
@@ -264,29 +246,14 @@ const removeCategory = async (categoryId) => {
   text-decoration: none;
 }
 
-.sub-card h3 {
-  margin: 0 0 12px;
-}
-
-.notes-list {
-  padding-left: 18px;
-}
-
-.notes-list li + li {
-  margin-top: 10px;
-}
-
 @media (max-width: 920px) {
   .page {
     padding-inline: 0;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .toolbar {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

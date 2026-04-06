@@ -6,11 +6,13 @@ import { RouterView } from 'vue-router'
 
 <template>
   <div class="layout-shell">
-    <section class="content-area">
-      <div class="topbar-sticky">
+    <div class="topbar-sticky">
+      <div class="topbar-shell">
         <AppHeader />
       </div>
+    </div>
 
+    <section class="content-area">
       <main class="layout__content">
         <RouterView />
       </main>
@@ -32,14 +34,12 @@ import { RouterView } from 'vue-router'
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  max-width: 1440px;
-  min-height: calc(100vh - 54px);
+  max-width: var(--shell-max);
+  min-height: calc(100vh - 58px);
   margin: 0 auto;
-  padding: 16px 32px 0;
+  padding: 12px var(--shell-padding) 0;
 }
 
 .topbar-sticky {
@@ -47,23 +47,31 @@ import { RouterView } from 'vue-router'
   top: 0;
   z-index: 40;
   width: 100%;
-  display: flex;
-  justify-content: center;
   background: var(--bg-page);
+  padding-inline: var(--shell-padding);
+}
+
+.topbar-shell {
+  width: min(100%, var(--shell-max));
+  margin: 0 auto;
 }
 
 .layout__content {
   width: 100%;
-  max-width: 1376px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   flex: 1;
+  min-width: 0;
 }
 
 @media (max-width: 960px) {
+  .topbar-sticky {
+    padding-inline: var(--shell-padding-mobile);
+  }
+
   .content-area {
-    padding: 16px;
+    padding: 12px var(--shell-padding-mobile) 0;
   }
 }
 </style>

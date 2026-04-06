@@ -1,11 +1,12 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { createAsset } from '../../stores/assetStore'
 import { categoryItems } from '../../stores/categoryStore'
 
 const router = useRouter()
 const errorMessage = ref('')
+const hasCategories = computed(() => categoryItems.value.length > 0)
 
 const form = reactive({
   asset_name: '',
@@ -17,8 +18,23 @@ const form = reactive({
   qr_code: '',
 })
 
+watch(
+  categoryItems,
+  (items) => {
+    if (!form.category_id && items.length > 0) {
+      form.category_id = items[0].category_id
+    }
+  },
+  { immediate: true },
+)
+
 const submitForm = async () => {
   errorMessage.value = ''
+
+  if (!hasCategories.value) {
+    errorMessage.value = 'Tambahkan category terlebih dahulu sebelum membuat asset.'
+    return
+  }
 
   try {
     await createAsset(form)
@@ -52,6 +68,7 @@ const submitForm = async () => {
         <label class="field">
           <span>Category</span>
           <select v-model="form.category_id" required>
+            <option v-if="!hasCategories" value="">Belum ada category tersedia</option>
             <option v-for="item in categoryItems" :key="item.category_id" :value="item.category_id">
               {{ item.category_name }}
             </option>
@@ -85,7 +102,7 @@ const submitForm = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/assets')">Cancel</button>
-        <button type="submit" class="btn-primary">Save Asset</button>
+        <button type="submit" class="btn-primary" :disabled="!hasCategories">Save Asset</button>
       </div>
     </form>
   </section>
@@ -183,6 +200,12 @@ const submitForm = async () => {
   border: 1px solid #363636;
   background: linear-gradient(270deg, #171717 0%, #363636 100%);
   color: #ffffff;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .btn-secondary {

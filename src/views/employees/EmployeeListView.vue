@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import SupportNav from '../../components/common/SupportNav.vue'
 import { deleteEmployee } from '../../stores/employeeStore'
 import { getEmployees } from '../../services/employeeService'
 
@@ -21,8 +20,6 @@ const removeEmployee = async (employeeId) => {
     </div>
 
     <h1 class="page-title">Employees Directory</h1>
-
-    <SupportNav />
 
     <section class="card-shell panel">
       <div class="toolbar">
@@ -81,15 +78,6 @@ const removeEmployee = async (employeeId) => {
           </tbody>
         </table>
       </div>
-
-      <article class="sub-card">
-        <h3>Operational Notes</h3>
-        <ul class="notes-list">
-          <li>Data employee dipakai sebagai referensi utama saat proses peminjaman aset.</li>
-          <li>Kolom active loans membantu admin memantau siapa yang masih memegang asset.</li>
-          <li>Nomor telepon dan email memudahkan follow up saat asset harus dikembalikan.</li>
-        </ul>
-      </article>
     </section>
   </section>
 </template>
@@ -136,8 +124,9 @@ const removeEmployee = async (employeeId) => {
 }
 
 .toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   padding-bottom: 16px;
@@ -154,21 +143,20 @@ const removeEmployee = async (employeeId) => {
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
-.metric-box,
-.sub-card {
+.metric-box {
+  flex: 1 1 220px;
   padding: 16px;
   border: 1px solid #dbe4ee;
   border-radius: 12px;
   background: #fafafa;
 }
 
-.metric-box span,
-.notes-list {
+.metric-box span {
   color: #64748b;
 }
 
@@ -250,30 +238,14 @@ const removeEmployee = async (employeeId) => {
   text-decoration: none;
 }
 
-.sub-card h3,
-.notes-list {
-  margin: 0;
-}
-
-.notes-list {
-  padding-left: 18px;
-}
-
-.notes-list li + li {
-  margin-top: 10px;
-}
-
 @media (max-width: 920px) {
   .page {
     padding-inline: 0;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .toolbar {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

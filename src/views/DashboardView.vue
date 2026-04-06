@@ -54,13 +54,11 @@ const quickStats = computed(() => getDashboardSummary())
 
 <style scoped>
 .dashboard-page {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 16px;
   width: 100%;
-  padding: 20px 20px 80px;
+  padding: 20px 20px 64px;
   box-sizing: border-box;
 }
 
@@ -96,21 +94,31 @@ const quickStats = computed(() => getDashboardSummary())
 }
 
 .dashboard__stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
 .dashboard__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
+}
+
+.dashboard__stats :deep(> *) {
+  flex: 1 1 220px;
+}
+
+.dashboard__grid > * {
+  flex: 1 1 320px;
+  min-width: 0;
 }
 
 .dashboard-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   width: 100%;
   min-height: 52px;
@@ -122,7 +130,8 @@ const quickStats = computed(() => getDashboardSummary())
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: 320px;
+  flex: 1 1 280px;
+  width: min(100%, 420px);
   min-height: 36px;
   padding: 7px 12px;
   border: 1px solid #a3a3a3;
@@ -146,7 +155,8 @@ const quickStats = computed(() => getDashboardSummary())
 }
 
 .dashboard-actions {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -174,7 +184,6 @@ const quickStats = computed(() => getDashboardSummary())
 
 @media (max-width: 920px) {
   .dashboard-page {
-    min-height: auto;
     padding-inline: 0;
   }
 
@@ -189,12 +198,12 @@ const quickStats = computed(() => getDashboardSummary())
   }
 
   .dashboard-actions {
-    display: grid;
+    flex-direction: column;
   }
 
-  .dashboard__stats,
-  .dashboard__grid {
-    grid-template-columns: 1fr;
+  .dashboard__stats :deep(> *),
+  .dashboard__grid > * {
+    flex-basis: 100%;
   }
 }
 </style>

@@ -143,12 +143,11 @@ const handleDetected = (rawValue) => {
 
 <style scoped>
 .page {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  padding: 20px 20px 80px;
+  padding: 20px 20px 64px;
   box-sizing: border-box;
 }
 
@@ -183,8 +182,8 @@ strong {
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
@@ -192,6 +191,8 @@ strong {
   display: grid;
   gap: 20px;
   padding: 20px;
+  flex: 1 1 360px;
+  min-width: 0;
 }
 
 .field {
@@ -210,13 +211,14 @@ strong {
 }
 
 .action-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .btn-primary,
 .btn-secondary {
+  flex: 1 1 160px;
   min-height: 40px;
   padding: 0 14px;
   border-radius: 8px;
@@ -246,6 +248,7 @@ strong {
 .asset-top {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
@@ -256,12 +259,13 @@ strong {
 }
 
 .detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .detail-item {
+  flex: 1 1 220px;
   padding: 14px;
   border: 1px solid #dbe4ee;
   border-radius: 12px;
@@ -321,11 +325,15 @@ strong {
     padding-inline: 0;
   }
 
-  .grid,
-  .detail-grid,
-  .action-grid,
   .history-row {
     grid-template-columns: 1fr;
+  }
+
+  .card-shell,
+  .detail-item,
+  .btn-primary,
+  .btn-secondary {
+    flex-basis: 100%;
   }
 }
 </style>

@@ -70,19 +70,19 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
   align-items: center;
   gap: 16px;
   width: 100%;
-  max-width: 1376px;
-  margin: 0 auto;
-  padding: 16px 0 0;
-  min-height: 96px;
+  min-width: 0;
+  padding: 12px 0 0;
+  min-height: 92px;
 }
 
 .header-logo {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  padding: 16px;
+  width: clamp(68px, 6vw, 80px);
+  height: clamp(68px, 6vw, 80px);
+  padding: 14px;
   background: #363636;
   border-radius: 16px;
 }
@@ -95,8 +95,8 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
 }
 
 .logo-image {
-  width: 48px;
-  height: 48px;
+  width: clamp(36px, 3vw, 48px);
+  height: clamp(36px, 3vw, 48px);
   object-fit: contain;
 }
 
@@ -106,8 +106,9 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
   align-items: center;
   gap: 20px;
   flex: 1;
+  min-width: 0;
   min-height: 80px;
-  padding: 16px 24px;
+  padding: 14px clamp(16px, 2vw, 24px);
   background: #ffffff;
   border-radius: 16px;
   border: 1px solid #eeeeee;
@@ -117,17 +118,19 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .navbar-menu {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding: 0 16px;
+  min-height: 38px;
+  padding: 0 14px;
   border-radius: 6px;
   font-weight: 600;
   color: #404040;
+  white-space: nowrap;
 }
 
 .navbar-menu.active {
@@ -136,13 +139,14 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
 }
 
 .menu-text {
-  font-size: 16px;
+  font-size: clamp(14px, 1.2vw, 16px);
 }
 
 .user-menu-wrapper {
   position: relative;
   padding: 10px 0;
   margin: -10px 0;
+  flex: 0 0 auto;
 }
 
 .user-box {
@@ -176,7 +180,9 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
   .navbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
     min-height: auto;
+    padding-top: 6px;
   }
 
   .header-logo {
@@ -187,15 +193,33 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
 
   .header-content {
     flex-direction: column;
-    padding: 22px;
+    padding: 18px 16px;
     align-items: stretch;
   }
 
   .menu-list {
-    justify-content: center;
+    justify-content: flex-start;
+    gap: 10px;
   }
 
   .user-box {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-menu {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .menu-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .user-menu-wrapper {
+    display: flex;
     justify-content: center;
   }
 }

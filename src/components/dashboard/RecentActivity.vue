@@ -33,6 +33,7 @@ const activities = computed(() => getRecentActivities())
 .activity__header {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 18px;
@@ -72,5 +73,16 @@ p {
   height: 10px;
   border-radius: 999px;
   background: var(--brand);
+}
+
+@media (max-width: 640px) {
+  .activity {
+    padding: 16px;
+  }
+
+  .activity__row {
+    align-items: flex-start;
+    padding-block: 14px;
+  }
 }
 </style>

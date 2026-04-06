@@ -35,6 +35,7 @@ const labelClass = (label) => {
 .chart__header {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 18px;
@@ -59,6 +60,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 14px 16px;
   border: 1px solid var(--border-soft);
@@ -93,5 +95,15 @@ p {
   color: #e39a21;
   background: #fff9ef;
   border: 1px solid #f0b859;
+}
+
+@media (max-width: 640px) {
+  .chart {
+    padding: 16px;
+  }
+
+  .chart__item {
+    align-items: flex-start;
+  }
 }
 </style>
