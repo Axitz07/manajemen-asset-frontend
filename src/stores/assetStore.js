@@ -3,48 +3,85 @@ import { apiRequest } from '../lib/api'
 
 export const assetItems = ref([])
 
+const assetStatusToApi = {
+  Available: 'available',
+  Broken: 'broken',
+  Maintenance: 'maintenance',
+}
+
+const assetStatusFromApi = {
+  available: 'Available',
+  broken: 'Broken',
+  maintenance: 'Maintenance',
+}
+
+const conditionToApi = {
+  Good: 'good',
+  Fair: 'fair',
+  Poor: 'poor',
+}
+
+const conditionFromApi = {
+  good: 'Good',
+  fair: 'Fair',
+  poor: 'Poor',
+}
+
+const normalizeAsset = (item) => ({
+  asset_id: item.id,
+  asset_code: item.asset_code,
+  asset_name: item.name,
+  category_id: item.category_id,
+  status: assetStatusFromApi[item.status] || item.status,
+  raw_status: item.status,
+  condition: conditionFromApi[item.condition] || item.condition,
+  created_at: item.created_at,
+  updated_at: item.updated_at,
+  category: item.category || null,
+  maintenances: item.maintenances || [],
+  qr_code: item.asset_code,
+  purchase_year: null,
+  asset_image: '',
+})
+
 export async function loadAssets() {
-  const response = await apiRequest('assets?limit=1000')
-  assetItems.value = response.data || []
+  const response = await apiRequest('assets?limit=1000&offset=0')
+  assetItems.value = (response.data || []).map(normalizeAsset)
   return assetItems.value
 }
 
 export async function createAsset(payload) {
-  const newItem = await apiRequest('assets', {
+  const response = await apiRequest('assets', {
     method: 'POST',
     body: JSON.stringify({
       asset_code: payload.asset_code?.trim() || `AST-${Date.now()}`,
-      asset_name: payload.asset_name,
-      category_id: Number(payload.category_id),
-      purchase_year: Number(payload.purchase_year),
-      condition: payload.condition,
-      status: payload.status,
-      qr_code: payload.qr_code?.trim() || '',
-      asset_image: payload.asset_image || '',
+      name: payload.asset_name,
+      category_id: payload.category_id,
+      condition: conditionToApi[payload.condition] || String(payload.condition || '').toLowerCase(),
+      status: assetStatusToApi[payload.status] || String(payload.status || '').toLowerCase(),
     }),
   })
 
+  const newItem = normalizeAsset(response.data || {})
   assetItems.value = [...assetItems.value, newItem]
   return newItem
 }
 
 export async function updateAsset(assetId, payload) {
-  const updatedItem = await apiRequest(`assets/${assetId}`, {
+  const response = await apiRequest(`assets/${assetId}`, {
     method: 'PUT',
     body: JSON.stringify({
       asset_code: payload.asset_code?.trim() || '',
-      asset_name: payload.asset_name,
-      category_id: Number(payload.category_id),
-      purchase_year: Number(payload.purchase_year),
-      condition: payload.condition,
-      status: payload.status,
-      qr_code: payload.qr_code?.trim() || '',
-      asset_image: payload.asset_image || '',
+      name: payload.asset_name,
+      category_id: payload.category_id,
+      condition: conditionToApi[payload.condition] || String(payload.condition || '').toLowerCase(),
+      status: assetStatusToApi[payload.status] || String(payload.status || '').toLowerCase(),
     }),
   })
 
+  const updatedItem = normalizeAsset(response.data || {})
   assetItems.value = assetItems.value.map((item) =>
-    item.asset_id === Number(assetId) ? { ...item, ...updatedItem } : item,
+    item.asset_id === assetId ? { ...item, ...updatedItem } : item,
   )
 
   return updatedItem
@@ -62,9 +99,9 @@ export async function updateAssetStatus(assetId, status) {
 
 export async function deleteAsset(assetId) {
   await apiRequest(`assets/${assetId}`, { method: 'DELETE' })
-  assetItems.value = assetItems.value.filter((item) => item.asset_id !== Number(assetId))
+  assetItems.value = assetItems.value.filter((item) => item.asset_id !== assetId)
 }
 
 export function findAssetById(assetId) {
-  return assetItems.value.find((item) => item.asset_id === Number(assetId)) ?? null
+  return assetItems.value.find((item) => item.asset_id === assetId) ?? null
 }

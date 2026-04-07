@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 import AppBadge from '../../components/common/AppBadge.vue'
-import SupportNav from '../../components/common/SupportNav.vue'
 import { getAssetHistories } from '../../services/historyService'
 
 const histories = computed(() => getAssetHistories())
@@ -20,8 +19,6 @@ const toneFromStatus = (status) => {
     </div>
 
     <h1 class="page-title">Asset History</h1>
-
-    <SupportNav />
 
     <section class="card-shell panel">
       <article class="timeline-card">

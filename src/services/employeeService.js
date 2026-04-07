@@ -3,7 +3,7 @@ import { loanItems } from '../stores/loanStore'
 
 export function getEmployees() {
   return employeeItems.value.map((employee) => {
-    const employeeLoans = loanItems.value.filter((item) => item.employee_id === employee.employee_id)
+    const employeeLoans = loanItems.value.filter((item) => item.user_id === employee.employee_id)
 
     return {
       ...employee,

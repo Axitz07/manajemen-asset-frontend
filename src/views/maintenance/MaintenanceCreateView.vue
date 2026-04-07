@@ -9,13 +9,13 @@ const router = useRouter()
 const errorMessage = ref('')
 
 const assets = computed(() => getAssets())
-const defaultAsset = assets.value.find((item) => item.asset_id === Number(route.query.asset_id)) ?? assets.value[0]
+const defaultAsset = assets.value.find((item) => item.asset_id === String(route.query.asset_id || '')) ?? assets.value[0]
 
 const form = reactive({
   asset_id: defaultAsset?.asset_id ?? '',
   issue_description: route.query.issue ? String(route.query.issue) : '',
   maintenance_date: new Date().toISOString().slice(0, 10),
-  maintenance_status: 'Repairing',
+  maintenance_status: 'Pending',
 })
 
 const submitForm = async () => {
@@ -52,14 +52,15 @@ const submitForm = async () => {
         </label>
 
         <label class="field">
-          <span>Maintenance Date</span>
+          <span>Start Date</span>
           <input v-model="form.maintenance_date" type="date" required />
         </label>
 
         <label class="field">
           <span>Status</span>
           <select v-model="form.maintenance_status">
-            <option>Repairing</option>
+            <option>Pending</option>
+            <option>Progress</option>
             <option>Done</option>
           </select>
         </label>

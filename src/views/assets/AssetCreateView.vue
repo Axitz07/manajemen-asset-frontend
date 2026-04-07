@@ -12,10 +12,8 @@ const form = reactive({
   asset_name: '',
   asset_code: '',
   category_id: categoryItems.value[0]?.category_id ?? '',
-  purchase_year: new Date().getFullYear(),
-  condition: 'Baik',
+  condition: 'Good',
   status: 'Available',
-  qr_code: '',
 })
 
 watch(
@@ -75,28 +73,20 @@ const submitForm = async () => {
           </select>
         </label>
         <label class="field">
-          <span>Purchase Year</span>
-          <input v-model="form.purchase_year" type="number" min="2000" max="2100" required />
-        </label>
-        <label class="field">
-          <span>Condition</span>
+          <span>Condition (Physical)</span>
           <select v-model="form.condition">
-            <option>Baik</option>
-            <option>Rusak Ringan</option>
-            <option>Rusak Berat</option>
+            <option>Good</option>
+            <option>Fair</option>
+            <option>Poor</option>
           </select>
         </label>
         <label class="field">
-          <span>Status</span>
+          <span>Status (Operational)</span>
           <select v-model="form.status">
             <option>Available</option>
-            <option>In Use</option>
+            <option>Broken</option>
             <option>Maintenance</option>
           </select>
-        </label>
-        <label class="field">
-          <span>QR Code</span>
-          <input v-model="form.qr_code" type="text" placeholder="Kosongkan untuk auto-generate" />
         </label>
       </div>
 

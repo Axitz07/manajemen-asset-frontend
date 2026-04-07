@@ -1,6 +1,10 @@
 import { appConfig } from './env'
 
 const buildUrl = (path = '') => {
+  if (!appConfig.apiBaseUrl) {
+    throw new Error('VITE_API_BASE_URL belum diatur di file .env')
+  }
+
   const cleanedPath = String(path || '').replace(/^\/+/, '')
   return `${appConfig.apiBaseUrl}/${cleanedPath}`
 }
@@ -20,8 +24,10 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const message =
-      typeof payload === 'object' && payload?.error
-        ? payload.error
+      typeof payload === 'object' && payload?.message
+        ? payload.message
+        : typeof payload === 'object' && payload?.error
+          ? payload.error
         : typeof payload === 'string'
           ? payload
           : 'API request gagal.'

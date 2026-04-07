@@ -2,20 +2,20 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppBadge from '../../components/common/AppBadge.vue'
+import { currentUser } from '../../stores/authStore'
 import { getLoans } from '../../services/loanService'
-import { deleteLoan } from '../../stores/loanStore'
 
-const loans = computed(() => getLoans())
+const loans = computed(() =>
+  currentUser.value?.role === 'admin'
+    ? getLoans()
+    : getLoans().filter((item) => item.user_id === currentUser.value?.id),
+)
+const canReturnLoan = computed(() => currentUser.value?.role === 'admin')
 
 const activeLoans = computed(() => loans.value.filter((item) => item.status === 'Borrowed').length)
 const returnedLoans = computed(() => loans.value.filter((item) => item.status === 'Returned').length)
 
 const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
-
-const removeLoan = async (loanId) => {
-  if (!window.confirm('Hapus transaksi loan ini?')) return
-  await deleteLoan(loanId)
-}
 </script>
 
 <template>
@@ -59,8 +59,7 @@ const removeLoan = async (loanId) => {
               <th>LOAN DATE</th>
               <th>RETURN DATE</th>
               <th>STATUS</th>
-              <th>NOTE</th>
-              <th>ACTIONS</th>
+              <th v-if="canReturnLoan">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -70,8 +69,7 @@ const removeLoan = async (loanId) => {
               <td>{{ item.loan_date }}</td>
               <td>{{ item.return_date || '-' }}</td>
               <td><AppBadge :label="item.status" :tone="statusTone(item.status)" /></td>
-              <td>{{ item.note || '-' }}</td>
-              <td>
+              <td v-if="canReturnLoan">
                 <div class="action-group">
                   <RouterLink
                     v-if="item.status === 'Borrowed'"
@@ -81,7 +79,6 @@ const removeLoan = async (loanId) => {
                     Return
                   </RouterLink>
                   <span v-else class="muted-text">Done</span>
-                  <button type="button" class="action-link delete" @click="removeLoan(item.loan_id)">Delete</button>
                 </div>
               </td>
             </tr>

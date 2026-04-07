@@ -2,18 +2,16 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppBadge from '../../components/common/AppBadge.vue'
-import { deleteMaintenance } from '../../stores/maintenanceStore'
 import { getMaintenances } from '../../services/maintenanceService'
 
 const maintenances = computed(() => getMaintenances())
-const openTickets = computed(() => maintenances.value.filter((item) => item.maintenance_status === 'Repairing').length)
+const openTickets = computed(() => maintenances.value.filter((item) => item.maintenance_status !== 'Done').length)
 const doneTickets = computed(() => maintenances.value.filter((item) => item.maintenance_status === 'Done').length)
 
-const statusTone = (status) => (status === 'Done' ? 'success' : 'warning')
-
-const removeMaintenance = async (maintenanceId) => {
-  if (!window.confirm('Hapus data maintenance ini?')) return
-  await deleteMaintenance(maintenanceId)
+const statusTone = (status) => {
+  if (status === 'Done') return 'success'
+  if (status === 'Progress') return 'warning'
+  return 'neutral'
 }
 </script>
 
@@ -40,7 +38,7 @@ const removeMaintenance = async (maintenanceId) => {
           <strong>{{ maintenances.length }}</strong>
         </article>
         <article class="metric-box">
-          <span>Repairing</span>
+          <span>Open Tickets</span>
           <strong>{{ openTickets }}</strong>
         </article>
         <article class="metric-box">
@@ -55,7 +53,7 @@ const removeMaintenance = async (maintenanceId) => {
             <tr>
               <th>ASSET</th>
               <th>ISSUE DESCRIPTION</th>
-              <th>MAINTENANCE DATE</th>
+              <th>START DATE</th>
               <th>STATUS</th>
               <th>ACTIONS</th>
             </tr>
@@ -69,9 +67,6 @@ const removeMaintenance = async (maintenanceId) => {
               <td>
                 <div class="action-group">
                   <RouterLink :to="`/maintenance/${item.maintenance_id}`" class="action-link">Detail</RouterLink>
-                  <button type="button" class="action-link delete" @click="removeMaintenance(item.maintenance_id)">
-                    Delete
-                  </button>
                 </div>
               </td>
             </tr>

@@ -1,1 +1,1 @@
-export const ASSET_STATUS = ['Available', 'In Use', 'Maintenance']
+export const ASSET_STATUS = ['Available', 'Broken', 'Maintenance']

@@ -1,1 +1,1 @@
-export const MAINTENANCE_STATUS = ['Repairing', 'Done']
+export const MAINTENANCE_STATUS = ['Pending', 'Progress', 'Done']

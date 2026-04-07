@@ -13,7 +13,9 @@ const form = reactive({
   asset_id: maintenance?.asset_id ?? '',
   issue_description: maintenance?.issue_description ?? '',
   maintenance_date: maintenance?.maintenance_date ?? new Date().toISOString().slice(0, 10),
-  maintenance_status: maintenance?.maintenance_status ?? 'Repairing',
+  maintenance_status: maintenance?.maintenance_status ?? 'Pending',
+  reported_by: maintenance?.reported_by ?? '',
+  end_date: maintenance?.end_date ?? null,
 })
 const errorMessage = ref('')
 
@@ -54,14 +56,15 @@ const submitForm = async () => {
 
       <div class="form-grid">
         <label class="field">
-          <span>Maintenance Date</span>
+          <span>Start Date</span>
           <input v-model="form.maintenance_date" type="date" required />
         </label>
 
         <label class="field">
           <span>Status</span>
           <select v-model="form.maintenance_status">
-            <option>Repairing</option>
+            <option>Pending</option>
+            <option>Progress</option>
             <option>Done</option>
           </select>
         </label>
@@ -73,7 +76,7 @@ const submitForm = async () => {
       </div>
 
       <p class="info-text">
-        Saat status diubah ke `Done`, status asset otomatis kembali ke `Available` dan history akan tercatat.
+        Saat status diubah ke `Done`, backend akan menutup record maintenance dan status asset akan mengikuti aturan backend terbaru.
       </p>
 
       <div class="actions">

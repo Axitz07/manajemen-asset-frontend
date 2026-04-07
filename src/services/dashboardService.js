@@ -1,14 +1,16 @@
 import { assetItems } from '../stores/assetStore'
 import { loanItems } from '../stores/loanStore'
 import { maintenanceItems } from '../stores/maintenanceStore'
-import { historyItems } from '../stores/historyStore'
+import { getAssetHistories } from './historyService'
+import { getAssets } from './assetService'
 
 export function getDashboardSummary() {
-  const available = assetItems.value.filter((item) => item.status === 'Available').length
-  const inUse = assetItems.value.filter((item) => item.status === 'In Use').length
-  const maintenance = assetItems.value.filter((item) => item.status === 'Maintenance').length
+  const assets = getAssets()
+  const available = assets.filter((item) => item.status === 'Available').length
+  const borrowed = assets.filter((item) => item.status === 'Borrowed').length
+  const maintenance = assets.filter((item) => item.status === 'Maintenance').length
   const activeLoans = loanItems.value.filter((item) => item.status === 'Borrowed').length
-  const repairOpen = maintenanceItems.value.filter((item) => item.maintenance_status === 'Repairing').length
+  const repairOpen = maintenanceItems.value.filter((item) => item.maintenance_status !== 'Done').length
 
   return [
     {
@@ -18,8 +20,8 @@ export function getDashboardSummary() {
       tone: 'success',
     },
     {
-      title: 'In Use',
-      value: String(inUse),
+      title: 'Borrowed',
+      value: String(borrowed),
       note: `${activeLoans} transaksi pinjam masih aktif`,
       tone: 'warning',
     },
@@ -33,13 +35,14 @@ export function getDashboardSummary() {
 }
 
 export function getDashboardStatusStats() {
+  const assets = getAssets()
   return [
-    { label: 'Available', value: assetItems.value.filter((item) => item.status === 'Available').length },
-    { label: 'In Use', value: assetItems.value.filter((item) => item.status === 'In Use').length },
-    { label: 'Maintenance', value: assetItems.value.filter((item) => item.status === 'Maintenance').length },
+    { label: 'Available', value: assets.filter((item) => item.status === 'Available').length },
+    { label: 'Borrowed', value: assets.filter((item) => item.status === 'Borrowed').length },
+    { label: 'Maintenance', value: assets.filter((item) => item.status === 'Maintenance').length },
   ]
 }
 
 export function getRecentActivities(limit = 5) {
-  return historyItems.value.slice(0, limit).map((item) => item.note)
+  return getAssetHistories().slice(0, limit).map((item) => item.note)
 }

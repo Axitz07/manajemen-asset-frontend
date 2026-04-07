@@ -3,34 +3,43 @@ import { apiRequest } from '../lib/api'
 
 export const categoryItems = ref([])
 
+const normalizeCategory = (item) => ({
+  category_id: item.id,
+  category_name: item.name,
+  created_at: item.created_at,
+  updated_at: item.updated_at,
+})
+
 export async function loadCategories() {
-  const response = await apiRequest('categories?limit=1000')
-  categoryItems.value = response.data || []
+  const response = await apiRequest('categories?limit=1000&offset=0')
+  categoryItems.value = (response.data || []).map(normalizeCategory)
   return categoryItems.value
 }
 
 export async function createCategory(payload) {
-  const newItem = await apiRequest('categories', {
+  const response = await apiRequest('categories', {
     method: 'POST',
     body: JSON.stringify({
-      category_name: payload.category_name,
+      name: payload.category_name,
     }),
   })
 
+  const newItem = normalizeCategory(response.data || {})
   categoryItems.value = [...categoryItems.value, newItem]
   return newItem
 }
 
 export async function updateCategory(categoryId, payload) {
-  const updatedItem = await apiRequest(`categories/${categoryId}`, {
+  const response = await apiRequest(`categories/${categoryId}`, {
     method: 'PUT',
     body: JSON.stringify({
-      category_name: payload.category_name,
+      name: payload.category_name,
     }),
   })
 
+  const updatedItem = normalizeCategory(response.data || {})
   categoryItems.value = categoryItems.value.map((item) =>
-    item.category_id === Number(categoryId) ? { ...item, ...updatedItem } : item,
+    item.category_id === categoryId ? { ...item, ...updatedItem } : item,
   )
 
   return updatedItem
@@ -38,9 +47,9 @@ export async function updateCategory(categoryId, payload) {
 
 export async function deleteCategory(categoryId) {
   await apiRequest(`categories/${categoryId}`, { method: 'DELETE' })
-  categoryItems.value = categoryItems.value.filter((item) => item.category_id !== Number(categoryId))
+  categoryItems.value = categoryItems.value.filter((item) => item.category_id !== categoryId)
 }
 
 export function findCategoryById(categoryId) {
-  return categoryItems.value.find((item) => item.category_id === Number(categoryId)) ?? null
+  return categoryItems.value.find((item) => item.category_id === categoryId) ?? null
 }

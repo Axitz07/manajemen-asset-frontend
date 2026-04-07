@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { currentUser } from '../../stores/authStore'
 import { getAssets } from '../../services/assetService'
 import { getEmployees } from '../../services/employeeService'
 import { createLoan } from '../../stores/loanStore'
@@ -8,28 +9,30 @@ import { createLoan } from '../../stores/loanStore'
 const route = useRoute()
 const router = useRouter()
 const errorMessage = ref('')
+const isAdmin = computed(() => currentUser.value?.role === 'admin')
 
 const availableAssets = computed(() => getAssets().filter((item) => item.status === 'Available'))
-const employees = computed(() => getEmployees())
-const canSubmit = computed(() => availableAssets.value.length > 0 && employees.value.length > 0)
+const users = computed(() =>
+  isAdmin.value ? getEmployees() : getEmployees().filter((item) => item.employee_id === currentUser.value?.id),
+)
+const canSubmit = computed(() => availableAssets.value.length > 0 && users.value.length > 0)
 
 const defaultAsset =
-  availableAssets.value.find((item) => item.asset_id === Number(route.query.asset_id)) ?? availableAssets.value[0]
+  availableAssets.value.find((item) => item.asset_id === String(route.query.asset_id || '')) ?? availableAssets.value[0]
 
 const form = reactive({
   asset_id: defaultAsset?.asset_id ?? '',
-  employee_id: employees.value[0]?.employee_id ?? '',
+  employee_id: currentUser.value?.role === 'staff' ? currentUser.value?.id || '' : users.value[0]?.employee_id ?? '',
   loan_date: new Date().toISOString().slice(0, 10),
-  note: '',
 })
 
 watch(
   availableAssets,
   (items) => {
-    const requestedAssetId = Number(route.query.asset_id)
+    const requestedAssetId = String(route.query.asset_id || '')
     const requestedAsset = items.find((item) => item.asset_id === requestedAssetId)
 
-    if (!form.asset_id || !items.some((item) => item.asset_id === Number(form.asset_id))) {
+    if (!form.asset_id || !items.some((item) => item.asset_id === form.asset_id)) {
       form.asset_id = requestedAsset?.asset_id ?? items[0]?.asset_id ?? ''
     }
   },
@@ -37,9 +40,9 @@ watch(
 )
 
 watch(
-  employees,
+  users,
   (items) => {
-    if (!form.employee_id || !items.some((item) => item.employee_id === Number(form.employee_id))) {
+    if (!form.employee_id || !items.some((item) => item.employee_id === form.employee_id)) {
       form.employee_id = items[0]?.employee_id ?? ''
     }
   },
@@ -54,13 +57,13 @@ const submitForm = async () => {
     return
   }
 
-  if (!employees.value.length) {
+  if (!users.value.length) {
     errorMessage.value = 'Tambahkan employee terlebih dahulu sebelum membuat loan.'
     return
   }
 
   try {
-    await createLoan(form)
+    await createLoan({ ...form, employee_id: form.employee_id })
     router.push('/loans')
   } catch (error) {
     errorMessage.value = error.message
@@ -92,10 +95,10 @@ const submitForm = async () => {
 
         <label class="field">
           <span>Employee</span>
-          <select v-model="form.employee_id" required>
-            <option v-if="!employees.length" value="">Belum ada employee tersedia</option>
-            <option v-for="item in employees" :key="item.employee_id" :value="item.employee_id">
-              {{ item.employee_name }}
+          <select v-model="form.employee_id" required :disabled="!isAdmin">
+            <option v-if="!users.length" value="">Belum ada employee tersedia</option>
+            <option v-for="item in users" :key="item.employee_id" :value="item.employee_id">
+              {{ item.employee_name }} ({{ item.role }})
             </option>
           </select>
         </label>
@@ -103,11 +106,6 @@ const submitForm = async () => {
         <label class="field">
           <span>Loan Date</span>
           <input v-model="form.loan_date" type="date" required />
-        </label>
-
-        <label class="field field--full">
-          <span>Note</span>
-          <textarea v-model="form.note" rows="4" placeholder="Catatan peminjaman asset"></textarea>
         </label>
       </div>
 

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppBadge from '../../components/common/AppBadge.vue'
 import { deleteAsset } from '../../stores/assetStore'
+import { currentUser } from '../../stores/authStore'
 import { getAssets } from '../../services/assetService'
 
 const searchQuery = ref('')
@@ -20,20 +21,24 @@ const filteredAssets = computed(() => {
 })
 
 const availableCount = computed(() => assets.value.filter((item) => item.status === 'Available').length)
-const inUseCount = computed(() => assets.value.filter((item) => item.status === 'In Use').length)
+const borrowedCount = computed(() => assets.value.filter((item) => item.status === 'Borrowed').length)
 const maintenanceCount = computed(() => assets.value.filter((item) => item.status === 'Maintenance').length)
+const brokenCount = computed(() => assets.value.filter((item) => item.status === 'Broken').length)
 const attentionAssets = computed(() => assets.value.filter((item) => item.status !== 'Available'))
+const canManageAssets = computed(() => currentUser.value?.role === 'admin')
 
 const statusTone = (status) => {
   if (status === 'Available') return 'success'
   if (status === 'Maintenance') return 'danger'
+  if (status === 'Broken') return 'danger'
   return 'warning'
 }
 
 const conditionTone = (condition) => {
-  if (condition === 'Baik') return 'success'
-  if (condition === 'Rusak Ringan') return 'warning'
-  return 'danger'
+  if (condition === 'Good') return 'success'
+  if (condition === 'Fair') return 'warning'
+  if (condition === 'Poor') return 'danger'
+  return 'neutral'
 }
 
 const removeAsset = async (assetId) => {
@@ -57,12 +62,12 @@ const removeAsset = async (assetId) => {
             <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" />
             <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
-          <input v-model="searchQuery" type="text" placeholder="Search asset by name, code, or user..." />
+          <input v-model="searchQuery" type="text" placeholder="Search asset by name, code, or employee..." />
         </label>
 
         <div class="toolbar-actions">
-          <button type="button" class="btn-secondary">Export Assets</button>
-          <RouterLink to="/assets/create" class="btn-primary btn-link">Add New Asset</RouterLink>
+          <button v-if="canManageAssets" type="button" class="btn-secondary">Export Assets</button>
+          <RouterLink v-if="canManageAssets" to="/assets/create" class="btn-primary btn-link">Add New Asset</RouterLink>
         </div>
       </div>
 
@@ -76,12 +81,16 @@ const removeAsset = async (assetId) => {
           <strong>{{ availableCount }}</strong>
         </article>
         <article class="metric-box">
-          <span>In Use</span>
-          <strong>{{ inUseCount }}</strong>
+          <span>Borrowed</span>
+          <strong>{{ borrowedCount }}</strong>
         </article>
         <article class="metric-box">
           <span>Maintenance</span>
           <strong>{{ maintenanceCount }}</strong>
+        </article>
+        <article class="metric-box">
+          <span>Broken</span>
+          <strong>{{ brokenCount }}</strong>
         </article>
       </div>
 
@@ -92,12 +101,11 @@ const removeAsset = async (assetId) => {
               <th>ASSET CODE</th>
               <th>ASSET NAME</th>
               <th>CATEGORY</th>
-              <th>YEAR</th>
-              <th>CONDITION</th>
-              <th>STATUS</th>
+              <th>PHYSICAL CONDITION</th>
+              <th>OPERATIONAL STATUS</th>
               <th>USED BY</th>
               <th>QR CODE</th>
-              <th>ACTIONS</th>
+              <th v-if="canManageAssets">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -105,12 +113,11 @@ const removeAsset = async (assetId) => {
               <td>{{ item.asset_code }}</td>
               <td>{{ item.asset_name }}</td>
               <td>{{ item.category_name }}</td>
-              <td>{{ item.purchase_year }}</td>
               <td><AppBadge :label="item.condition" :tone="conditionTone(item.condition)" /></td>
               <td><AppBadge :label="item.status" :tone="statusTone(item.status)" /></td>
               <td>{{ item.assigned_employee_name }}</td>
               <td>{{ item.qr_code }}</td>
-              <td>
+              <td v-if="canManageAssets">
                 <div class="action-group">
                   <RouterLink :to="`/assets/${item.asset_id}/edit`" class="action-link edit">Edit</RouterLink>
                   <button type="button" class="action-link delete" @click="removeAsset(item.asset_id)">
@@ -120,7 +127,7 @@ const removeAsset = async (assetId) => {
               </td>
             </tr>
             <tr v-if="filteredAssets.length === 0">
-              <td colspan="9" class="empty-state">No assets found.</td>
+              <td :colspan="canManageAssets ? 8 : 7" class="empty-state">No assets found.</td>
             </tr>
           </tbody>
         </table>
@@ -195,6 +202,8 @@ const removeAsset = async (assetId) => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex: 1 1 280px;
+  width: min(100%, 420px);
   min-height: 36px;
   padding: 7px 12px;
   border: 1px solid #a3a3a3;
@@ -367,8 +376,8 @@ const removeAsset = async (assetId) => {
     overflow-x: auto;
   }
 
-  .data-table {
-    min-width: 980px;
+    .data-table {
+      min-width: 860px;
+    }
   }
-}
 </style>

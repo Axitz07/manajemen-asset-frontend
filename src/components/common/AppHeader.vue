@@ -1,14 +1,25 @@
 <script setup>
 import { computed } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { MENU_ITEMS } from '../../constants/menu'
 import { appConfig } from '../../lib/env'
 import initLogo from '../../assets/ui/logo/init.png'
+import { currentUser, logout } from '../../stores/authStore'
 
 const route = useRoute()
+const router = useRouter()
 const activePath = computed(() => route.path)
+const userInitial = computed(() => currentUser.value?.name?.trim()?.charAt(0)?.toUpperCase() ?? 'U')
+const visibleMenuItems = computed(() =>
+  MENU_ITEMS.filter((item) => item.roles?.includes(currentUser.value?.role || 'staff')),
+)
 
 const isMenuActive = (path) => activePath.value === path || activePath.value.startsWith(`${path}/`)
+
+const signOut = () => {
+  logout()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -20,7 +31,7 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
     <div class="header-content">
       <nav class="menu-list">
         <RouterLink
-          v-for="item in MENU_ITEMS"
+          v-for="item in visibleMenuItems"
           :key="item.label"
           class="navbar-menu"
           :class="{ active: isMenuActive(item.path) }"
@@ -33,31 +44,13 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
       <div class="user-menu-wrapper">
         <div class="user-box">
           <span class="user-avatar">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 12C14.4853 12 16.5 9.98528 16.5 7.5C16.5 5.01472 14.4853 3 12 3C9.51472 3 7.5 5.01472 7.5 7.5C7.5 9.98528 9.51472 12 12 12Z"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-              <path
-                d="M4 21C4 17.6863 6.68629 15 10 15H14C17.3137 15 20 17.6863 20 21"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
+            {{ userInitial }}
           </span>
-          <span class="chevron-down">
-            <svg viewBox="0 0 20 20" fill="none">
-              <path
-                d="M6 8L10 12L14 8"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
+          <div class="user-copy">
+            <strong>{{ currentUser?.name || 'Employee' }}</strong>
+            <span>{{ currentUser?.role || 'staff' }}</span>
+          </div>
+          <button type="button" class="logout-button" @click="signOut">Logout</button>
         </div>
       </div>
     </div>
@@ -152,7 +145,7 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
 .user-box {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
 }
 
 .user-avatar {
@@ -163,17 +156,34 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
   border-radius: 999px;
   background: #d4d4d4;
   color: #ffffff;
+  font-weight: 800;
 }
 
-.user-avatar svg {
-  width: 24px;
-  height: 24px;
+.user-copy {
+  display: grid;
+  gap: 2px;
 }
 
-.chevron-down {
-  width: 20px;
-  height: 20px;
+.user-copy strong,
+.user-copy span {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.user-copy span {
   color: #404040;
+  font-size: 13px;
+}
+
+.logout-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #404040;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 @media (max-width: 920px) {
@@ -204,6 +214,7 @@ const isMenuActive = (path) => activePath.value === path || activePath.value.sta
 
   .user-box {
     justify-content: center;
+    flex-wrap: wrap;
   }
 }
 

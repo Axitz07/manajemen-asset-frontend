@@ -48,6 +48,12 @@ defineProps({
   border-color: #fca5a5;
 }
 
+.badge[data-tone='neutral'] {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
 .badge[data-tone='default'] {
   background: #eff6ff;
   color: var(--brand);

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AppBadge from '../../components/common/AppBadge.vue'
 import { getLoans } from '../../services/loanService'
@@ -7,14 +7,25 @@ import { returnLoan } from '../../stores/loanStore'
 
 const route = useRoute()
 const router = useRouter()
-const loan = computed(() => getLoans().find((item) => item.loan_id === Number(route.params.id)) ?? null)
+const loan = computed(() => getLoans().find((item) => item.loan_id === route.params.id) ?? null)
+const errorMessage = ref('')
+const isSubmitting = ref(false)
 
 const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
 
 const submitReturn = async () => {
   if (!loan.value) return
-  await returnLoan(loan.value.loan_id)
-  router.push('/loans')
+  errorMessage.value = ''
+  isSubmitting.value = true
+
+  try {
+    await returnLoan(loan.value.loan_id)
+    router.push('/loans')
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -25,6 +36,8 @@ const submitReturn = async () => {
     </div>
 
     <h1 class="page-title">Return Asset</h1>
+
+    <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
 
     <div v-if="!loan" class="not-found panel">
       <p>Data peminjaman tidak ditemukan.</p>
@@ -58,8 +71,13 @@ const submitReturn = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/loans')">Cancel</button>
-        <button type="button" class="btn-primary" :disabled="loan.status === 'Returned'" @click="submitReturn">
-          Confirm Return
+        <button
+          type="button"
+          class="btn-primary"
+          :disabled="loan.status === 'Returned' || isSubmitting"
+          @click="submitReturn"
+        >
+          {{ isSubmitting ? 'Processing...' : 'Confirm Return' }}
         </button>
       </div>
     </section>
@@ -72,6 +90,7 @@ const submitReturn = async () => {
 .breadcrumb, .page-title, .not-found p, .info-text { margin: 0; }
 .breadcrumb { font-size: 14px; font-weight: 600; color: #737373; }
 .page-title { font-size: 24px; font-weight: 700; color: #404040; }
+.notice { margin: 0; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; }
 .form-card, .not-found { display: grid; gap: 24px; padding: 24px; }
 .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .summary-item { display: grid; gap: 8px; padding: 16px; border: 1px solid #dbe4ee; border-radius: 12px; background: #fafafa; }

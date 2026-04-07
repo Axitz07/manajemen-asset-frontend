@@ -13,10 +13,8 @@ const form = reactive({
   asset_name: asset?.asset_name ?? '',
   asset_code: asset?.asset_code ?? '',
   category_id: asset?.category_id ?? '',
-  purchase_year: asset?.purchase_year ?? new Date().getFullYear(),
-  condition: asset?.condition ?? 'Baik',
+  condition: asset?.condition ?? 'Good',
   status: asset?.status ?? 'Available',
-  qr_code: asset?.qr_code ?? '',
 })
 
 const submitForm = async () => {
@@ -67,28 +65,20 @@ const submitForm = async () => {
           </select>
         </label>
         <label class="field">
-          <span>Purchase Year</span>
-          <input v-model="form.purchase_year" type="number" min="2000" max="2100" required />
-        </label>
-        <label class="field">
-          <span>Condition</span>
+          <span>Condition (Physical)</span>
           <select v-model="form.condition">
-            <option>Baik</option>
-            <option>Rusak Ringan</option>
-            <option>Rusak Berat</option>
+            <option>Good</option>
+            <option>Fair</option>
+            <option>Poor</option>
           </select>
         </label>
         <label class="field">
-          <span>Status</span>
+          <span>Status (Operational)</span>
           <select v-model="form.status">
             <option>Available</option>
-            <option>In Use</option>
+            <option>Broken</option>
             <option>Maintenance</option>
           </select>
-        </label>
-        <label class="field">
-          <span>QR Code</span>
-          <input v-model="form.qr_code" type="text" />
         </label>
       </div>
 

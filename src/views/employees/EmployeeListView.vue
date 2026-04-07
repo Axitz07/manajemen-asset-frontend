@@ -6,6 +6,7 @@ import { getEmployees } from '../../services/employeeService'
 
 const employees = computed(() => getEmployees())
 const activeBorrowers = computed(() => employees.value.filter((item) => item.active_loans > 0).length)
+const adminCount = computed(() => employees.value.filter((item) => item.role === 'admin').length)
 
 const removeEmployee = async (employeeId) => {
   if (!window.confirm('Hapus employee ini?')) return
@@ -25,7 +26,7 @@ const removeEmployee = async (employeeId) => {
       <div class="toolbar">
         <div>
           <h3>Employee Master Data</h3>
-          <p>Kelola data staff yang bisa meminjam asset perusahaan.</p>
+          <p>Kelola akun admin dan staff yang memakai sistem asset management.</p>
         </div>
         <RouterLink to="/employees/create" class="btn-primary btn-link">Add Employee</RouterLink>
       </div>
@@ -34,6 +35,10 @@ const removeEmployee = async (employeeId) => {
         <article class="metric-box">
           <span>Total Employees</span>
           <strong>{{ employees.length }}</strong>
+        </article>
+        <article class="metric-box">
+          <span>Admin Employees</span>
+          <strong>{{ adminCount }}</strong>
         </article>
         <article class="metric-box">
           <span>Active Borrowers</span>
@@ -51,7 +56,7 @@ const removeEmployee = async (employeeId) => {
             <tr>
               <th>EMPLOYEE</th>
               <th>EMAIL</th>
-              <th>PHONE</th>
+              <th>ROLE</th>
               <th>ACTIVE LOANS</th>
               <th>TOTAL LOANS</th>
               <th>JOINED</th>
@@ -62,7 +67,7 @@ const removeEmployee = async (employeeId) => {
             <tr v-for="item in employees" :key="item.employee_id">
               <td>{{ item.employee_name }}</td>
               <td>{{ item.email }}</td>
-              <td>{{ item.phone }}</td>
+              <td>{{ item.role }}</td>
               <td>{{ item.active_loans }}</td>
               <td>{{ item.total_loans }}</td>
               <td>{{ item.created_at }}</td>
