@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
 import SummaryCard from '../components/dashboard/SummaryCard.vue'
 import StatusChart from '../components/dashboard/StatusChart.vue'
 import RecentActivity from '../components/dashboard/RecentActivity.vue'
@@ -18,21 +17,6 @@ const quickStats = computed(() => getDashboardSummary())
     <h1 class="page-title">Asset Management Dashboard</h1>
 
     <section class="dashboard-card panel">
-      <div class="dashboard-toolbar">
-        <label class="search-field">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" />
-            <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
-          <input type="text" placeholder="Search asset, employee, or code..." />
-        </label>
-
-        <div class="dashboard-actions">
-          <RouterLink to="/maintenance/create" class="btn-secondary btn-link">Record Maintenance</RouterLink>
-          <RouterLink to="/assets/create" class="btn-primary btn-link">Add New Asset</RouterLink>
-        </div>
-      </div>
-
       <section class="dashboard__stats">
         <SummaryCard
           v-for="item in quickStats"
@@ -114,91 +98,9 @@ const quickStats = computed(() => getDashboardSummary())
   min-width: 0;
 }
 
-.dashboard-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  width: 100%;
-  min-height: 52px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #d4d4d4;
-}
-
-.search-field {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1 1 280px;
-  width: min(100%, 420px);
-  min-height: 36px;
-  padding: 7px 12px;
-  border: 1px solid #a3a3a3;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.search-icon {
-  width: 20px;
-  height: 20px;
-  color: #737373;
-}
-
-.search-field input {
-  width: 100%;
-  border: 0;
-  outline: none;
-  background: transparent;
-  font-size: 16px;
-  color: #737373;
-}
-
-.dashboard-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.btn-primary,
-.btn-secondary {
-  min-height: 36px;
-  padding: 0 16px;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-primary {
-  border: 1px solid #363636;
-  background: linear-gradient(270deg, #171717 0%, #363636 100%);
-  color: #ffffff;
-}
-
-.btn-secondary {
-  border: 1px solid #d4d4d4;
-  background: #ffffff;
-  color: #404040;
-}
-
 @media (max-width: 920px) {
   .dashboard-page {
     padding-inline: 0;
-  }
-
-  .dashboard-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-field,
-  .dashboard-actions {
-    width: 100%;
-  }
-
-  .dashboard-actions {
-    flex-direction: column;
   }
 
   .dashboard__stats :deep(> *),

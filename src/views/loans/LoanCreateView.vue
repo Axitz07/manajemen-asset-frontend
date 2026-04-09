@@ -1,7 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { currentUser } from '../../stores/authStore'
 import { getAssets } from '../../services/assetService'
 import { getEmployees } from '../../services/employeeService'
 import { createLoan } from '../../stores/loanStore'
@@ -9,20 +8,17 @@ import { createLoan } from '../../stores/loanStore'
 const route = useRoute()
 const router = useRouter()
 const errorMessage = ref('')
-const isAdmin = computed(() => currentUser.value?.role === 'admin')
 
 const availableAssets = computed(() => getAssets().filter((item) => item.status === 'Available'))
-const users = computed(() =>
-  isAdmin.value ? getEmployees() : getEmployees().filter((item) => item.employee_id === currentUser.value?.id),
-)
-const canSubmit = computed(() => availableAssets.value.length > 0 && users.value.length > 0)
+const employees = computed(() => getEmployees())
+const canSubmit = computed(() => availableAssets.value.length > 0 && employees.value.length > 0)
 
 const defaultAsset =
   availableAssets.value.find((item) => item.asset_id === String(route.query.asset_id || '')) ?? availableAssets.value[0]
 
 const form = reactive({
   asset_id: defaultAsset?.asset_id ?? '',
-  employee_id: currentUser.value?.role === 'staff' ? currentUser.value?.id || '' : users.value[0]?.employee_id ?? '',
+  employee_id: employees.value[0]?.employee_id ?? '',
   loan_date: new Date().toISOString().slice(0, 10),
 })
 
@@ -40,7 +36,7 @@ watch(
 )
 
 watch(
-  users,
+  employees,
   (items) => {
     if (!form.employee_id || !items.some((item) => item.employee_id === form.employee_id)) {
       form.employee_id = items[0]?.employee_id ?? ''
@@ -57,7 +53,7 @@ const submitForm = async () => {
     return
   }
 
-  if (!users.value.length) {
+  if (!employees.value.length) {
     errorMessage.value = 'Tambahkan employee terlebih dahulu sebelum membuat loan.'
     return
   }
@@ -95,10 +91,10 @@ const submitForm = async () => {
 
         <label class="field">
           <span>Employee</span>
-          <select v-model="form.employee_id" required :disabled="!isAdmin">
-            <option v-if="!users.length" value="">Belum ada employee tersedia</option>
-            <option v-for="item in users" :key="item.employee_id" :value="item.employee_id">
-              {{ item.employee_name }} ({{ item.role }})
+          <select v-model="form.employee_id" required>
+            <option v-if="!employees.length" value="">Belum ada employee tersedia</option>
+            <option v-for="item in employees" :key="item.employee_id" :value="item.employee_id">
+              {{ item.employee_name }}{{ item.phone ? ` (${item.phone})` : '' }}
             </option>
           </select>
         </label>

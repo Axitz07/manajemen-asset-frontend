@@ -6,15 +6,19 @@ import { createCategory } from '../../stores/categoryStore'
 const router = useRouter()
 const form = reactive({ category_name: '' })
 const errorMessage = ref('')
+const isSubmitting = ref(false)
 
 const submitForm = async () => {
   errorMessage.value = ''
+  isSubmitting.value = true
 
   try {
     await createCategory(form)
     router.push('/categories')
   } catch (error) {
     errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -37,7 +41,9 @@ const submitForm = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/categories')">Cancel</button>
-        <button type="submit" class="btn-primary">Save Category</button>
+        <button type="submit" class="btn-primary" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : 'Save Category' }}
+        </button>
       </div>
     </form>
   </section>

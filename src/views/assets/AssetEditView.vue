@@ -8,6 +8,7 @@ const route = useRoute()
 const router = useRouter()
 const asset = findAssetById(route.params.id)
 const errorMessage = ref('')
+const isSubmitting = ref(false)
 
 const form = reactive({
   asset_name: asset?.asset_name ?? '',
@@ -21,12 +22,15 @@ const submitForm = async () => {
   if (!asset) return
 
   errorMessage.value = ''
+  isSubmitting.value = true
 
   try {
     await updateAsset(route.params.id, form)
     router.push('/assets')
   } catch (error) {
     errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -84,7 +88,9 @@ const submitForm = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/assets')">Cancel</button>
-        <button type="submit" class="btn-primary">Update Asset</button>
+        <button type="submit" class="btn-primary" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Updating...' : 'Update Asset' }}
+        </button>
       </div>
     </form>
   </section>

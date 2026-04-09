@@ -13,7 +13,6 @@ import CategoryCreateView from '../views/categories/CategoryCreateView.vue'
 import CategoryEditView from '../views/categories/CategoryEditView.vue'
 import EmployeeListView from '../views/employees/EmployeeListView.vue'
 import EmployeeCreateView from '../views/employees/EmployeeCreateView.vue'
-import EmployeeEditView from '../views/employees/EmployeeEditView.vue'
 import LoanListView from '../views/loans/LoanListView.vue'
 import LoanCreateView from '../views/loans/LoanCreateView.vue'
 import ReturnAssetView from '../views/loans/ReturnAssetView.vue'
@@ -49,7 +48,7 @@ export const routes = [
         path: 'assets',
         name: 'assets',
         component: AssetListView,
-        meta: { title: 'Assets', roles: ['admin', 'staff'] },
+        meta: { title: 'Assets', roles: ['admin'] },
       },
       {
         path: 'assets/create',
@@ -94,22 +93,16 @@ export const routes = [
         meta: { title: 'Create Employee', roles: ['admin'] },
       },
       {
-        path: 'employees/:id/edit',
-        name: 'employees-edit',
-        component: EmployeeEditView,
-        meta: { title: 'Edit Employee', roles: ['admin'] },
-      },
-      {
         path: 'loans',
         name: 'loans',
         component: LoanListView,
-        meta: { title: 'Loans', roles: ['admin', 'staff'] },
+        meta: { title: 'Loans', roles: ['admin'] },
       },
       {
         path: 'loans/create',
         name: 'loans-create',
         component: LoanCreateView,
-        meta: { title: 'Create Loan', roles: ['admin', 'staff'] },
+        meta: { title: 'Create Loan', roles: ['admin'] },
       },
       {
         path: 'loans/:id/return',
@@ -145,13 +138,13 @@ export const routes = [
         path: 'qr',
         name: 'qr',
         component: QrScanView,
-        meta: { title: 'QR Center', roles: ['admin', 'staff'] },
+        meta: { title: 'QR Center', roles: ['admin'] },
       },
       {
         path: 'qr/assets/:id',
         name: 'qr-asset-detail',
         component: QrAssetDetailView,
-        meta: { title: 'QR Asset Detail', roles: ['admin', 'staff'] },
+        meta: { title: 'QR Asset Detail', roles: ['admin'] },
       },
     ],
   },

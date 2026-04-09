@@ -3,24 +3,46 @@ import { apiRequest } from '../lib/api'
 import { assetItems, findAssetById, loadAssets } from './assetStore'
 
 export const loanItems = ref([])
+export const loanLoadError = ref('')
 
-const normalizeLoan = (item) => ({
-  loan_id: item.id,
-  asset_id: item.asset_id || item.asset?.id || '',
-  user_id: item.user_id || item.user?.id || '',
-  loan_date: item.loan_date,
-  return_date: item.return_date,
-  status: item.status === 'returned' ? 'Returned' : 'Borrowed',
-  asset: item.asset || null,
-  user: item.user || null,
-  created_at: item.created_at,
-  updated_at: item.updated_at,
-})
+const normalizeLoan = (item) => {
+  return {
+    loan_id: item.id,
+    asset_id: item.asset_id || item.asset?.id || '',
+    employee_id: item.employee_id || item.employee?.id || '',
+    loan_date: item.loan_date,
+    return_date: item.return_date,
+    status: item.status === 'returned' ? 'Returned' : 'Borrowed',
+    asset: item.asset || null,
+    employee: item.employee || null,
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+  }
+}
+
+const uniqueByLoanId = (items) => {
+  const map = new Map()
+
+  items.forEach((item) => {
+    if (item?.loan_id) {
+      map.set(item.loan_id, item)
+    }
+  })
+
+  return [...map.values()]
+}
 
 export async function loadLoans() {
-  const response = await apiRequest('loans?limit=1000&offset=0')
-  loanItems.value = (response.data || []).map(normalizeLoan)
-  return loanItems.value
+  loanLoadError.value = ''
+
+  try {
+    const response = await apiRequest('loans?limit=1000&offset=0')
+    loanItems.value = uniqueByLoanId((response.data || []).map(normalizeLoan))
+    return loanItems.value
+  } catch (error) {
+    loanLoadError.value = error.message
+    throw error
+  }
 }
 
 export async function createLoan(payload) {
@@ -37,7 +59,7 @@ export async function createLoan(payload) {
       method: 'POST',
       body: JSON.stringify({
         asset_id: selectedAsset.asset_id,
-        user_id: payload.employee_id,
+        employee_id: payload.employee_id,
         loan_date: payload.loan_date ? new Date(`${payload.loan_date}T00:00:00`).toISOString() : new Date().toISOString(),
         status: 'borrowed',
       }),
@@ -55,10 +77,11 @@ export async function createLoan(payload) {
   const newItem = normalizeLoan({
     ...(response.data || {}),
     asset_id: response.data?.asset_id || selectedAsset.asset_id,
-    user_id: response.data?.user_id || payload.employee_id,
+    employee_id: response.data?.employee_id || payload.employee_id,
   })
-  loanItems.value = [newItem, ...loanItems.value]
-  await Promise.all([loadAssets(), loadLoans()])
+  loanItems.value = uniqueByLoanId([newItem, ...loanItems.value])
+  await loadAssets()
+  await loadLoans().catch(() => null)
   return newItem
 }
 
@@ -82,7 +105,7 @@ export async function returnLoan(loanId) {
       method: 'PUT',
       body: JSON.stringify({
         asset_id: normalizedAssetId,
-        user_id: loan.user_id,
+        employee_id: loan.employee_id,
         loan_date: normalizedLoanDate,
         return_date: new Date().toISOString(),
         status: 'returned',
@@ -98,7 +121,8 @@ export async function returnLoan(loanId) {
     throw error
   }
 
-  await Promise.all([loadLoans(), loadAssets()])
+  await loadAssets()
+  await loadLoans().catch(() => null)
   return findLoanById(loanId)
 }
 

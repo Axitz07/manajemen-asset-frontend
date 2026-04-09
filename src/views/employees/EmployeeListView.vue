@@ -1,17 +1,12 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { deleteEmployee } from '../../stores/employeeStore'
+import AppBadge from '../../components/common/AppBadge.vue'
 import { getEmployees } from '../../services/employeeService'
 
 const employees = computed(() => getEmployees())
 const activeBorrowers = computed(() => employees.value.filter((item) => item.active_loans > 0).length)
-const adminCount = computed(() => employees.value.filter((item) => item.role === 'admin').length)
-
-const removeEmployee = async (employeeId) => {
-  if (!window.confirm('Hapus employee ini?')) return
-  await deleteEmployee(employeeId)
-}
+const employeesWithPhone = computed(() => employees.value.filter((item) => item.phone).length)
 </script>
 
 <template>
@@ -20,13 +15,14 @@ const removeEmployee = async (employeeId) => {
       <p class="breadcrumb">Assets › Employees</p>
     </div>
 
-    <h1 class="page-title">Employees Directory</h1>
+    <h1 class="page-title">Employees</h1>
 
     <section class="card-shell panel">
       <div class="toolbar">
         <div>
-          <h3>Employee Master Data</h3>
-          <p>Kelola akun admin dan staff yang memakai sistem asset management.</p>
+          <p class="eyebrow">Borrower Master Data</p>
+          <h3>Employee Records for Loan Flow</h3>
+          <p>Employee di halaman ini adalah data peminjam yang dipakai saat transaksi asset loan.</p>
         </div>
         <RouterLink to="/employees/create" class="btn-primary btn-link">Add Employee</RouterLink>
       </div>
@@ -37,8 +33,8 @@ const removeEmployee = async (employeeId) => {
           <strong>{{ employees.length }}</strong>
         </article>
         <article class="metric-box">
-          <span>Admin Employees</span>
-          <strong>{{ adminCount }}</strong>
+          <span>With Phone Number</span>
+          <strong>{{ employeesWithPhone }}</strong>
         </article>
         <article class="metric-box">
           <span>Active Borrowers</span>
@@ -50,35 +46,41 @@ const removeEmployee = async (employeeId) => {
         </article>
       </div>
 
+      <div class="borrower-note">
+        <strong>Alur sistem</strong>
+        <p>
+          Employee bukan akun login. Akun login ada di tabel <code>users</code>, sedangkan halaman
+          ini menyimpan data orang yang boleh tercatat sebagai peminjam asset.
+        </p>
+      </div>
+
       <div class="table-shell">
         <table class="data-table">
           <thead>
             <tr>
               <th>EMPLOYEE</th>
               <th>EMAIL</th>
-              <th>ROLE</th>
+              <th>PHONE</th>
               <th>ACTIVE LOANS</th>
               <th>TOTAL LOANS</th>
+              <th>BORROWER STATUS</th>
               <th>JOINED</th>
-              <th>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in employees" :key="item.employee_id">
               <td>{{ item.employee_name }}</td>
               <td>{{ item.email }}</td>
-              <td>{{ item.role }}</td>
+              <td>{{ item.phone || '-' }}</td>
               <td>{{ item.active_loans }}</td>
               <td>{{ item.total_loans }}</td>
-              <td>{{ item.created_at }}</td>
               <td>
-                <div class="action-group">
-                  <RouterLink :to="`/employees/${item.employee_id}/edit`" class="action-link edit">Edit</RouterLink>
-                  <button type="button" class="action-link delete" @click="removeEmployee(item.employee_id)">
-                    Delete
-                  </button>
-                </div>
+                <AppBadge
+                  :label="item.active_loans > 0 ? 'Active Borrower' : 'Idle Borrower'"
+                  :tone="item.active_loans > 0 ? 'warning' : 'neutral'"
+                />
               </td>
+              <td>{{ item.created_at }}</td>
             </tr>
           </tbody>
         </table>
@@ -147,6 +149,13 @@ const removeEmployee = async (employeeId) => {
   color: #64748b;
 }
 
+.eyebrow {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .stats-grid {
   display: flex;
   flex-wrap: wrap;
@@ -170,6 +179,25 @@ const removeEmployee = async (employeeId) => {
   margin-top: 6px;
   font-size: 28px;
   color: #404040;
+}
+
+.borrower-note {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid #dbe4ee;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.borrower-note strong {
+  color: #111827;
+}
+
+.borrower-note p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
 }
 
 .table-shell {
@@ -206,25 +234,6 @@ const removeEmployee = async (employeeId) => {
   border-bottom: 0;
 }
 
-.action-group {
-  display: inline-flex;
-  gap: 10px;
-}
-
-.action-link {
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--brand);
-  font: inherit;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.action-link.delete {
-  color: var(--danger);
-}
-
 .btn-primary {
   min-height: 36px;
   padding: 0 16px;
@@ -251,6 +260,14 @@ const removeEmployee = async (employeeId) => {
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .table-shell {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 920px;
   }
 }
 </style>

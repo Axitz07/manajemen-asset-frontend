@@ -21,7 +21,7 @@ export function getAssets() {
       employeeItems.value.find(
         (employee) =>
           employee.employee_id ===
-          loanItems.value.find((loan) => loan.asset_id === item.asset_id && loan.status === 'Borrowed')?.user_id,
+          loanItems.value.find((loan) => loan.asset_id === item.asset_id && loan.status === 'Borrowed')?.employee_id,
       )?.employee_name ?? '-',
   }))
 }

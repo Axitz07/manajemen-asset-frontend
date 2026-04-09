@@ -10,9 +10,21 @@ const normalizeCategory = (item) => ({
   updated_at: item.updated_at,
 })
 
+const uniqueByCategoryId = (items) => {
+  const map = new Map()
+
+  items.forEach((item) => {
+    if (item?.category_id) {
+      map.set(item.category_id, item)
+    }
+  })
+
+  return [...map.values()]
+}
+
 export async function loadCategories() {
   const response = await apiRequest('categories?limit=1000&offset=0')
-  categoryItems.value = (response.data || []).map(normalizeCategory)
+  categoryItems.value = uniqueByCategoryId((response.data || []).map(normalizeCategory))
   return categoryItems.value
 }
 
@@ -25,7 +37,7 @@ export async function createCategory(payload) {
   })
 
   const newItem = normalizeCategory(response.data || {})
-  categoryItems.value = [...categoryItems.value, newItem]
+  categoryItems.value = uniqueByCategoryId([...categoryItems.value, newItem])
   return newItem
 }
 
@@ -38,8 +50,8 @@ export async function updateCategory(categoryId, payload) {
   })
 
   const updatedItem = normalizeCategory(response.data || {})
-  categoryItems.value = categoryItems.value.map((item) =>
-    item.category_id === categoryId ? { ...item, ...updatedItem } : item,
+  categoryItems.value = uniqueByCategoryId(
+    categoryItems.value.map((item) => (item.category_id === categoryId ? { ...item, ...updatedItem } : item)),
   )
 
   return updatedItem

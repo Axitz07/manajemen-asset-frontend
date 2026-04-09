@@ -145,22 +145,22 @@ const printQr = () => {
 <style scoped>
 .qr-card {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .qr-surface {
   display: grid;
   place-items: center;
-  min-height: 252px;
-  padding: 16px;
+  min-height: 230px;
+  padding: 14px;
   border: 1px solid #dbe4ee;
   border-radius: 16px;
   background: #ffffff;
 }
 
 .qr-image {
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
   object-fit: contain;
 }
 
@@ -173,6 +173,7 @@ const printQr = () => {
 .qr-meta {
   display: grid;
   gap: 6px;
+  padding: 0 4px;
 }
 
 .qr-meta strong,
@@ -181,17 +182,32 @@ const printQr = () => {
   margin: 0;
 }
 
+.qr-meta strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.qr-meta span {
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
+.qr-meta p {
+  line-height: 1.6;
+}
+
 .qr-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn-primary,
 .btn-secondary {
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 12px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -218,6 +234,10 @@ const printQr = () => {
   .qr-actions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .qr-surface {
+    min-height: 220px;
   }
 }
 </style>

@@ -1,10 +1,11 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { deleteCategory } from '../../stores/categoryStore'
 import { getCategories } from '../../services/categoryService'
 
 const categories = computed(() => getCategories())
+const pageError = ref('')
 
 const topCategory = computed(() =>
   [...categories.value].sort((a, b) => b.total_assets - a.total_assets)[0] ?? null,
@@ -16,7 +17,14 @@ const totalAssets = computed(() =>
 
 const removeCategory = async (categoryId) => {
   if (!window.confirm('Hapus kategori ini?')) return
-  await deleteCategory(categoryId)
+
+  pageError.value = ''
+
+  try {
+    await deleteCategory(categoryId)
+  } catch (error) {
+    pageError.value = error.message
+  }
 }
 </script>
 
@@ -27,6 +35,8 @@ const removeCategory = async (categoryId) => {
     </div>
 
     <h1 class="page-title">Asset Categories</h1>
+
+    <p v-if="pageError" class="notice">{{ pageError }}</p>
 
     <section class="card-shell panel">
       <div class="toolbar">
@@ -116,6 +126,15 @@ const removeCategory = async (categoryId) => {
   font-size: 24px;
   font-weight: 700;
   color: #404040;
+}
+
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .card-shell {

@@ -10,9 +10,7 @@ const route = useRoute()
 const router = useRouter()
 const activePath = computed(() => route.path)
 const userInitial = computed(() => currentUser.value?.name?.trim()?.charAt(0)?.toUpperCase() ?? 'U')
-const visibleMenuItems = computed(() =>
-  MENU_ITEMS.filter((item) => item.roles?.includes(currentUser.value?.role || 'staff')),
-)
+const visibleMenuItems = computed(() => MENU_ITEMS)
 
 const isMenuActive = (path) => activePath.value === path || activePath.value.startsWith(`${path}/`)
 
@@ -48,7 +46,7 @@ const signOut = () => {
           </span>
           <div class="user-copy">
             <strong>{{ currentUser?.name || 'Employee' }}</strong>
-            <span>{{ currentUser?.role || 'staff' }}</span>
+            <span>{{ currentUser?.role || 'admin' }}</span>
           </div>
           <button type="button" class="logout-button" @click="signOut">Logout</button>
         </div>

@@ -95,6 +95,16 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="scanner-panel">
+    <div class="scanner-head">
+      <div>
+        <p class="eyebrow">Live Camera</p>
+        <h4>Scan QR dari asset fisik</h4>
+      </div>
+      <div class="scanner-pill" :class="{ active: isCameraActive }">
+        {{ isCameraActive ? 'Camera aktif' : 'Camera standby' }}
+      </div>
+    </div>
+
     <div class="video-shell">
       <video ref="videoRef" class="scanner-video" playsinline muted></video>
       <div v-if="!isCameraActive" class="scanner-overlay">
@@ -120,12 +130,49 @@ onBeforeUnmount(() => {
 <style scoped>
 .scanner-panel {
   display: grid;
-  gap: 16px;
+  gap: 12px;
+}
+
+.scanner-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scanner-head h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #111827;
+}
+
+.scanner-pill {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.scanner-pill.active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
 }
 
 .video-shell {
   position: relative;
-  min-height: 320px;
+  min-height: 0;
+  aspect-ratio: 16 / 11;
   overflow: hidden;
   border: 1px dashed #93c5fd;
   border-radius: 16px;
@@ -134,7 +181,7 @@ onBeforeUnmount(() => {
 
 .scanner-video {
   width: 100%;
-  min-height: 320px;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -151,8 +198,8 @@ onBeforeUnmount(() => {
 }
 
 .scanner-frame {
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
   border: 4px solid #38bdf8;
   border-radius: 16px;
   box-shadow: inset 0 0 0 8px rgba(56, 189, 248, 0.08);
@@ -164,15 +211,16 @@ onBeforeUnmount(() => {
 
 .scanner-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn-primary,
 .btn-secondary {
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 12px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -203,5 +251,20 @@ onBeforeUnmount(() => {
 
 .error-text {
   color: #b91c1c;
+}
+
+@media (max-width: 920px) {
+  .scanner-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .scanner-head {
+    flex-direction: column;
+  }
+
+  .video-shell {
+    aspect-ratio: 4 / 3;
+  }
 }
 </style>

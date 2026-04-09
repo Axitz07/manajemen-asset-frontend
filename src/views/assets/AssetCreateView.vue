@@ -6,6 +6,7 @@ import { categoryItems } from '../../stores/categoryStore'
 
 const router = useRouter()
 const errorMessage = ref('')
+const isSubmitting = ref(false)
 const hasCategories = computed(() => categoryItems.value.length > 0)
 
 const form = reactive({
@@ -28,9 +29,11 @@ watch(
 
 const submitForm = async () => {
   errorMessage.value = ''
+  isSubmitting.value = true
 
   if (!hasCategories.value) {
     errorMessage.value = 'Tambahkan category terlebih dahulu sebelum membuat asset.'
+    isSubmitting.value = false
     return
   }
 
@@ -39,6 +42,8 @@ const submitForm = async () => {
     router.push('/assets')
   } catch (error) {
     errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -92,7 +97,9 @@ const submitForm = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/assets')">Cancel</button>
-        <button type="submit" class="btn-primary" :disabled="!hasCategories">Save Asset</button>
+        <button type="submit" class="btn-primary" :disabled="!hasCategories || isSubmitting">
+          {{ isSubmitting ? 'Saving...' : 'Save Asset' }}
+        </button>
       </div>
     </form>
   </section>

@@ -17,7 +17,6 @@ const loans = computed(() => getLoans())
 const maintenances = computed(() => getMaintenances())
 const isAdmin = computed(() => currentUser.value?.role === 'admin')
 const scannedCode = ref(assets.value.find((item) => item.status === 'Borrowed')?.qr_code ?? assets.value[0]?.qr_code ?? '')
-const scanMessage = ref('Pilih manual atau gunakan camera scanner untuk membaca QR asset.')
 const scannedAsset = computed(() => assets.value.find((item) => item.qr_code === scannedCode.value) ?? assets.value[0] ?? null)
 const relatedHistory = computed(() =>
   histories.value.filter((item) => item.asset_id === scannedAsset.value?.asset_id).slice(0, 4),
@@ -39,22 +38,18 @@ const qrInsights = computed(() => {
     {
       label: 'Physical Condition',
       value: scannedAsset.value.condition,
-      helper: 'Menunjukkan kondisi fisik asset saat ini.',
     },
     {
       label: 'Operational Status',
       value: scannedAsset.value.status,
-      helper: 'Menunjukkan apakah asset tersedia, dipinjam, rusak, atau maintenance.',
     },
     {
       label: 'Assigned Employee',
       value: scannedAsset.value.assigned_employee_name,
-      helper: activeLoan.value ? 'Sedang tercatat dalam transaksi loan aktif.' : 'Belum ada loan aktif.',
     },
     {
       label: 'Recent Activity',
-      value: latestActivity.value?.note ?? 'Belum ada history transaksi.',
-      helper: latestActivity.value?.changed_at ?? 'History akan muncul setelah loan atau maintenance berjalan.',
+      value: latestActivity.value?.note ?? 'Belum ada history.',
     },
   ]
 })
@@ -93,11 +88,8 @@ const handleDetected = (rawValue) => {
 
   if (matchedAsset) {
     scannedCode.value = matchedAsset.qr_code
-    scanMessage.value = `QR ${matchedAsset.qr_code} berhasil dibaca dari camera.`
     return
   }
-
-  scanMessage.value = `QR ${normalized} terbaca, tapi belum cocok dengan asset yang ada.`
 }
 </script>
 
@@ -107,39 +99,64 @@ const handleDetected = (rawValue) => {
       <p class="breadcrumb">Assets › QR Center</p>
     </div>
 
-    <h1 class="page-title">QR Scan & Asset Lookup</h1>
+    <div class="hero card-shell">
+      <div>
+        <h1 class="page-title">Scan, lookup, dan cetak QR asset</h1>
+      </div>
+
+      <div class="hero-meta">
+        <div class="meta-chip">
+          <span>Total Asset</span>
+          <strong>{{ assets.length }}</strong>
+        </div>
+        <div class="meta-chip">
+          <span>QR Terpilih</span>
+          <strong>{{ scannedCode || '-' }}</strong>
+        </div>
+      </div>
+    </div>
 
     <section class="grid">
-      <article class="panel card-shell">
-        <h3>Scanner Preview</h3>
+      <article class="panel card-shell scanner-card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Scanner Preview</p>
+            <h3>Camera Scan</h3>
+          </div>
+          <AppBadge label="Admin View" tone="neutral" />
+        </div>
+
         <QrScannerPanel @detected="handleDetected" />
 
         <label class="field">
           <span>QR Code Value</span>
           <select v-model="scannedCode">
             <option v-for="item in assets" :key="item.asset_id" :value="item.qr_code">
-              {{ item.qr_code }} - {{ item.asset_name }}
+              {{ item.asset_name }} • {{ item.qr_code }}
             </option>
           </select>
         </label>
 
-        <p class="helper-copy">{{ scanMessage }}</p>
-
         <div class="action-grid">
-          <button type="button" class="btn-primary" :disabled="scannedAsset?.status !== 'Available'" @click="openBorrowFlow">
+          <button
+            type="button"
+            class="btn-primary"
+            :disabled="scannedAsset?.status !== 'Available'"
+            @click="openBorrowFlow"
+          >
             Request Borrow
           </button>
-          <button v-if="isAdmin" type="button" class="btn-secondary" :disabled="!activeLoan" @click="openReturnFlow">Return Asset</button>
+          <button v-if="isAdmin" type="button" class="btn-secondary" :disabled="!activeLoan" @click="openReturnFlow">
+            Return Asset
+          </button>
           <button v-if="isAdmin" type="button" class="btn-secondary" @click="openMaintenanceFlow">Report Damage</button>
         </div>
       </article>
 
-      <article v-if="scannedAsset" class="panel card-shell">
+      <article v-if="scannedAsset" class="panel card-shell result-card">
         <div class="asset-top">
           <div>
-            <p class="eyebrow">Scanned Result</p>
             <h3>{{ scannedAsset.asset_name }}</h3>
-            <p class="scan-subtitle">Informasi lengkap asset yang ditemukan dari QR yang discan.</p>
           </div>
           <AppBadge :label="scannedAsset.status" :tone="statusTone(scannedAsset.status)" />
         </div>
@@ -159,7 +176,7 @@ const handleDetected = (rawValue) => {
           </div>
           <div class="detail-item">
             <span>QR Value</span>
-            <strong>{{ scannedAsset.qr_code }}</strong>
+            <strong class="mono">{{ scannedAsset.qr_code }}</strong>
           </div>
         </div>
 
@@ -167,24 +184,23 @@ const handleDetected = (rawValue) => {
           <article v-for="item in qrInsights" :key="item.label" class="insight-card">
             <span>{{ item.label }}</span>
             <strong>{{ item.value }}</strong>
-            <p>{{ item.helper }}</p>
           </article>
         </div>
 
-        <QrCodeCard :asset-name="scannedAsset.asset_name" :qr-value="scannedAsset.qr_code" />
-        <RouterLink :to="`/qr/assets/${scannedAsset.asset_id}`" class="detail-link">Open Asset QR Detail</RouterLink>
+        <div class="asset-tools">
+          <QrCodeCard :asset-name="scannedAsset.asset_name" :qr-value="scannedAsset.qr_code" />
+          <RouterLink :to="`/qr/assets/${scannedAsset.asset_id}`" class="detail-link">Open Asset QR Detail</RouterLink>
+        </div>
 
         <div class="status-panels">
           <article class="status-card">
             <p class="history-title">Loan Snapshot</p>
             <div v-if="activeLoan" class="status-copy">
               <strong>{{ activeLoan.employee_name }}</strong>
-              <span>Dipinjam sejak {{ activeLoan.loan_date }}</span>
-              <span>Status transaksi: {{ activeLoan.status }}</span>
+              <span>{{ activeLoan.loan_date }} • {{ activeLoan.status }}</span>
             </div>
             <div v-else class="status-copy">
               <strong>Tidak ada loan aktif</strong>
-              <span>Asset ini sedang tidak dipinjam oleh employee mana pun.</span>
             </div>
           </article>
 
@@ -201,17 +217,19 @@ const handleDetected = (rawValue) => {
             </div>
             <div v-else class="status-copy">
               <strong>Belum ada maintenance</strong>
-              <span>Belum ada record perbaikan yang tercatat untuk asset ini.</span>
             </div>
           </article>
         </div>
 
         <div class="history-box">
           <p class="history-title">Related History</p>
-          <div v-for="item in relatedHistory" :key="item.history_id" class="history-row">
-            <span>{{ item.changed_at }}</span>
-            <span>{{ item.note }}</span>
+          <div v-if="relatedHistory.length" class="history-list">
+            <div v-for="item in relatedHistory" :key="item.history_id" class="history-row">
+              <span>{{ item.changed_at }}</span>
+              <span>{{ item.note }}</span>
+            </div>
           </div>
+          <div v-else class="empty-state">Belum ada history.</div>
         </div>
       </article>
     </section>
@@ -222,9 +240,9 @@ const handleDetected = (rawValue) => {
 .page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
-  padding: 20px 20px 64px;
+  padding: 18px 20px 56px;
   box-sizing: border-box;
 }
 
@@ -253,23 +271,66 @@ strong {
 
 .page-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: #404040;
 }
 
 .grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
 }
 
 .card-shell {
   display: grid;
-  gap: 20px;
-  padding: 20px;
-  flex: 1 1 360px;
+  gap: 14px;
+  padding: 16px;
   min-width: 0;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.meta-chip {
+  min-width: 160px;
+  padding: 12px 14px;
+  border: 1px solid #dbe4ee;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.meta-chip span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.meta-chip strong {
+  display: block;
+  margin-top: 6px;
+  color: #111827;
+  word-break: break-word;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .field {
@@ -290,16 +351,16 @@ strong {
 .action-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .btn-primary,
 .btn-secondary {
   flex: 1 1 160px;
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 12px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -326,29 +387,18 @@ strong {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
-}
-
-.eyebrow {
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.scan-subtitle {
-  margin-top: 6px;
-  color: #64748b;
+  gap: 12px;
 }
 
 .detail-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .detail-item {
   flex: 1 1 220px;
-  padding: 14px;
+  padding: 12px;
   border: 1px solid #dbe4ee;
   border-radius: 12px;
   background: #fafafa;
@@ -363,19 +413,20 @@ strong {
   display: block;
   margin-top: 6px;
   color: #404040;
+  word-break: break-word;
 }
 
 .insight-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .insight-card,
 .status-card {
   display: grid;
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  padding: 12px;
   border: 1px solid #dbe4ee;
   border-radius: 12px;
   background: #fafafa;
@@ -387,17 +438,13 @@ strong {
 
 .insight-card strong {
   color: #111827;
-}
-
-.insight-card p {
-  color: #64748b;
-  line-height: 1.5;
+  word-break: break-word;
 }
 
 .status-panels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .status-copy {
@@ -413,9 +460,9 @@ strong {
 .maintenance-row {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -424,25 +471,27 @@ strong {
   padding-bottom: 0;
 }
 
+.asset-tools {
+  display: grid;
+  gap: 10px;
+}
+
 .detail-link {
+  width: fit-content;
   color: var(--brand);
   font-weight: 700;
   text-decoration: underline;
-}
-
-.helper-copy {
-  color: #64748b;
-  line-height: 1.6;
 }
 
 .history-box {
   border: 1px solid #dbe4ee;
   border-radius: 12px;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .history-title {
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: #fafafa;
   border-bottom: 1px solid #dbe4ee;
   font-weight: 700;
@@ -450,9 +499,9 @@ strong {
 
 .history-row {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
-  gap: 16px;
-  padding: 14px 16px;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 14px;
   border-bottom: 1px solid #e5e7eb;
   color: #525252;
 }
@@ -461,9 +510,34 @@ strong {
   border-bottom: 0;
 }
 
+.history-list {
+  display: grid;
+}
+
+.empty-state {
+  padding: 12px 14px;
+  color: #64748b;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
 @media (max-width: 920px) {
   .page {
     padding-inline: 0;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero,
+  .section-head,
+  .asset-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .history-row {

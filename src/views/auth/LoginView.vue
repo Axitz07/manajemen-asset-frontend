@@ -1,7 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { hydrateAppData } from '../../stores/bootstrapStore'
 import { getDefaultRouteByRole, login } from '../../stores/authStore'
 
 const router = useRouter()
@@ -19,7 +18,6 @@ const submitForm = async () => {
 
   try {
     const user = await login(form)
-    await hydrateAppData()
     router.push(getDefaultRouteByRole(user?.role))
   } catch (error) {
     errorMessage.value = error.message
@@ -34,9 +32,7 @@ const submitForm = async () => {
     <div class="login-shell">
       <article class="login-card panel">
         <div class="login-copy">
-          <p class="eyebrow">Asset Management</p>
           <h1>Login ke Sistem</h1>
-          <p class="description">Masuk menggunakan akun admin atau staff yang sudah terdaftar.</p>
         </div>
 
         <p v-if="errorMessage" class="notice">{{ errorMessage }}</p>
@@ -89,15 +85,11 @@ const submitForm = async () => {
   gap: 12px;
 }
 
-.eyebrow,
-.description,
 .field span {
   color: #64748b;
 }
 
-.eyebrow,
 h1,
-.description,
 .notice {
   margin: 0;
 }

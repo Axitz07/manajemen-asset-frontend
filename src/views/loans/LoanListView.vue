@@ -1,21 +1,26 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppBadge from '../../components/common/AppBadge.vue'
-import { currentUser } from '../../stores/authStore'
 import { getLoans } from '../../services/loanService'
+import { loadLoans, loanLoadError } from '../../stores/loanStore'
 
-const loans = computed(() =>
-  currentUser.value?.role === 'admin'
-    ? getLoans()
-    : getLoans().filter((item) => item.user_id === currentUser.value?.id),
-)
-const canReturnLoan = computed(() => currentUser.value?.role === 'admin')
+const loans = computed(() => getLoans())
+const pageError = ref('')
 
 const activeLoans = computed(() => loans.value.filter((item) => item.status === 'Borrowed').length)
 const returnedLoans = computed(() => loans.value.filter((item) => item.status === 'Returned').length)
 
 const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
+
+onMounted(async () => {
+  try {
+    await loadLoans()
+    pageError.value = ''
+  } catch (error) {
+    pageError.value = error.message
+  }
+})
 </script>
 
 <template>
@@ -25,6 +30,10 @@ const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
     </div>
 
     <h1 class="page-title">Asset Loans</h1>
+
+    <p v-if="pageError || loanLoadError" class="notice">
+      {{ pageError || loanLoadError }}
+    </p>
 
     <section class="card-shell panel">
       <div class="toolbar">
@@ -59,7 +68,7 @@ const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
               <th>LOAN DATE</th>
               <th>RETURN DATE</th>
               <th>STATUS</th>
-              <th v-if="canReturnLoan">ACTIONS</th>
+              <th>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -69,7 +78,7 @@ const statusTone = (status) => (status === 'Returned' ? 'success' : 'warning')
               <td>{{ item.loan_date }}</td>
               <td>{{ item.return_date || '-' }}</td>
               <td><AppBadge :label="item.status" :tone="statusTone(item.status)" /></td>
-              <td v-if="canReturnLoan">
+              <td>
                 <div class="action-group">
                   <RouterLink
                     v-if="item.status === 'Borrowed'"
@@ -126,6 +135,15 @@ p {
   font-size: 24px;
   font-weight: 700;
   color: #404040;
+}
+
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .card-shell {

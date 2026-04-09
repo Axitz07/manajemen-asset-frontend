@@ -3,58 +3,41 @@ import { apiRequest } from '../lib/api'
 
 export const employeeItems = ref([])
 
-const normalizeUser = (item) => ({
+const normalizeEmployee = (item) => ({
   employee_id: item.id,
   employee_name: item.name,
   email: item.email,
-  role: item.role,
+  phone: item.phone || '',
   created_at: item.created_at,
-  updated_at: item.updated_at,
 })
 
 export async function loadEmployees() {
-  const response = await apiRequest('users?limit=1000&offset=0')
-  employeeItems.value = (response.data || []).map(normalizeUser)
+  const response = await apiRequest('employees?limit=1000&offset=0')
+  employeeItems.value = (response.data || []).map(normalizeEmployee)
   return employeeItems.value
 }
 
 export async function createEmployee(payload) {
-  const response = await apiRequest('users', {
+  const response = await apiRequest('employees', {
     method: 'POST',
     body: JSON.stringify({
-      name: payload.employee_name,
-      email: payload.email,
-      password: payload.password,
-      role: payload.role,
+      name: payload.employee_name?.trim(),
+      email: payload.email?.trim(),
+      phone: payload.phone?.trim() || '',
     }),
   })
 
-  const newItem = normalizeUser(response.data || {})
+  const newItem = normalizeEmployee(response.data || {})
   employeeItems.value = [...employeeItems.value, newItem]
   return newItem
 }
 
 export async function updateEmployee(employeeId, payload) {
-  const response = await apiRequest(`users/${employeeId}`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      name: payload.employee_name,
-      email: payload.email,
-      role: payload.role,
-    }),
-  })
-
-  const updatedItem = normalizeUser(response.data || {})
-  employeeItems.value = employeeItems.value.map((item) =>
-    item.employee_id === employeeId ? { ...item, ...updatedItem } : item,
-  )
-
-  return updatedItem
+  throw new Error(`Edit employee belum tersedia di backend v3.`)
 }
 
 export async function deleteEmployee(employeeId) {
-  await apiRequest(`users/${employeeId}`, { method: 'DELETE' })
-  employeeItems.value = employeeItems.value.filter((item) => item.employee_id !== employeeId)
+  throw new Error(`Delete employee belum tersedia di backend v3.`)
 }
 
 export function findEmployeeById(employeeId) {

@@ -8,8 +8,7 @@ const errorMessage = ref('')
 const form = reactive({
   employee_name: '',
   email: '',
-  password: '',
-  role: 'staff',
+  phone: '',
 })
 
 const submitForm = async () => {
@@ -45,15 +44,8 @@ const submitForm = async () => {
           <input v-model="form.email" type="email" required />
         </label>
         <label class="field">
-          <span>Password</span>
-          <input v-model="form.password" type="password" minlength="6" required />
-        </label>
-        <label class="field">
-          <span>Role</span>
-          <select v-model="form.role">
-            <option value="admin">admin</option>
-            <option value="staff">staff</option>
-          </select>
+          <span>Phone</span>
+          <input v-model="form.phone" type="text" />
         </label>
       </div>
 

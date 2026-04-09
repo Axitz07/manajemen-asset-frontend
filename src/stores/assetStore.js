@@ -39,14 +39,26 @@ const normalizeAsset = (item) => ({
   updated_at: item.updated_at,
   category: item.category || null,
   maintenances: item.maintenances || [],
-  qr_code: item.asset_code,
+  qr_code: item.qr_code || item.asset_code,
   purchase_year: null,
   asset_image: '',
 })
 
+const uniqueByAssetId = (items) => {
+  const map = new Map()
+
+  items.forEach((item) => {
+    if (item?.asset_id) {
+      map.set(item.asset_id, item)
+    }
+  })
+
+  return [...map.values()]
+}
+
 export async function loadAssets() {
   const response = await apiRequest('assets?limit=1000&offset=0')
-  assetItems.value = (response.data || []).map(normalizeAsset)
+  assetItems.value = uniqueByAssetId((response.data || []).map(normalizeAsset))
   return assetItems.value
 }
 
@@ -59,11 +71,12 @@ export async function createAsset(payload) {
       category_id: payload.category_id,
       condition: conditionToApi[payload.condition] || String(payload.condition || '').toLowerCase(),
       status: assetStatusToApi[payload.status] || String(payload.status || '').toLowerCase(),
+      qr_code: payload.qr_code?.trim() || payload.asset_code?.trim() || `QR-${Date.now()}`,
     }),
   })
 
   const newItem = normalizeAsset(response.data || {})
-  assetItems.value = [...assetItems.value, newItem]
+  assetItems.value = uniqueByAssetId([...assetItems.value, newItem])
   return newItem
 }
 
@@ -76,12 +89,13 @@ export async function updateAsset(assetId, payload) {
       category_id: payload.category_id,
       condition: conditionToApi[payload.condition] || String(payload.condition || '').toLowerCase(),
       status: assetStatusToApi[payload.status] || String(payload.status || '').toLowerCase(),
+      qr_code: payload.qr_code?.trim() || payload.asset_code?.trim() || '',
     }),
   })
 
   const updatedItem = normalizeAsset(response.data || {})
-  assetItems.value = assetItems.value.map((item) =>
-    item.asset_id === assetId ? { ...item, ...updatedItem } : item,
+  assetItems.value = uniqueByAssetId(
+    assetItems.value.map((item) => (item.asset_id === assetId ? { ...item, ...updatedItem } : item)),
   )
 
   return updatedItem

@@ -8,17 +8,21 @@ const router = useRouter()
 const category = findCategoryById(route.params.id)
 const form = reactive({ category_name: category?.category_name ?? '' })
 const errorMessage = ref('')
+const isSubmitting = ref(false)
 
 const submitForm = async () => {
   if (!category) return
 
   errorMessage.value = ''
+  isSubmitting.value = true
 
   try {
     await updateCategory(route.params.id, form)
     router.push('/categories')
   } catch (error) {
     errorMessage.value = error.message
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -46,7 +50,9 @@ const submitForm = async () => {
 
       <div class="actions">
         <button type="button" class="btn-secondary" @click="router.push('/categories')">Cancel</button>
-        <button type="submit" class="btn-primary">Update Category</button>
+        <button type="submit" class="btn-primary" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Updating...' : 'Update Category' }}
+        </button>
       </div>
     </form>
   </section>
