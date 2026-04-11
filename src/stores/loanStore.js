@@ -5,13 +5,38 @@ import { assetItems, findAssetById, loadAssets } from './assetStore'
 export const loanItems = ref([])
 export const loanLoadError = ref('')
 
+const toDateOnly = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10)
+  }
+
+  return date.toISOString().slice(0, 10)
+}
+
+const toIsoDate = (value) => {
+  if (!value) return new Date().toISOString()
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+    return new Date(`${value}T00:00:00`).toISOString()
+  }
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return new Date().toISOString()
+  }
+
+  return parsed.toISOString()
+}
+
 const normalizeLoan = (item) => {
   return {
     loan_id: item.id,
     asset_id: item.asset_id || item.asset?.id || '',
     employee_id: item.employee_id || item.employee?.id || '',
-    loan_date: item.loan_date,
-    return_date: item.return_date,
+    loan_date: toDateOnly(item.loan_date),
+    return_date: toDateOnly(item.return_date),
     status: item.status === 'returned' ? 'Returned' : 'Borrowed',
     asset: item.asset || null,
     employee: item.employee || null,
@@ -60,7 +85,7 @@ export async function createLoan(payload) {
       body: JSON.stringify({
         asset_id: selectedAsset.asset_id,
         employee_id: payload.employee_id,
-        loan_date: payload.loan_date ? new Date(`${payload.loan_date}T00:00:00`).toISOString() : new Date().toISOString(),
+        loan_date: toIsoDate(payload.loan_date),
         status: 'borrowed',
       }),
     })
@@ -91,9 +116,7 @@ export async function returnLoan(loanId) {
     throw new Error('Data peminjaman tidak ditemukan.')
   }
 
-  const normalizedLoanDate = loan.loan_date
-    ? new Date(loan.loan_date).toISOString()
-    : new Date().toISOString()
+  const normalizedLoanDate = toIsoDate(loan.loan_date)
   const normalizedAssetId = loan.asset_id || loan.asset?.id || ''
 
   if (!normalizedAssetId) {

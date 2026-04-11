@@ -7,18 +7,22 @@ const readStoredAuth = () => {
   if (typeof window === 'undefined') return null
 
   try {
-    const raw = window.sessionStorage.getItem(AUTH_STORAGE_KEY)
-    if (!raw) return null
+    const storages = [window.localStorage, window.sessionStorage]
 
-    const parsed = JSON.parse(raw)
-    if (parsed?.user && parsed?.token) {
-      return parsed
-    }
+    for (const storage of storages) {
+      const raw = storage.getItem(AUTH_STORAGE_KEY)
+      if (!raw) continue
 
-    if (parsed?.id) {
-      return {
-        user: parsed,
-        token: '',
+      const parsed = JSON.parse(raw)
+      if (parsed?.user && parsed?.token) {
+        return parsed
+      }
+
+      if (parsed?.id) {
+        return {
+          user: parsed,
+          token: '',
+        }
       }
     }
 
@@ -32,16 +36,20 @@ const writeStoredAuth = (user, token) => {
   if (typeof window === 'undefined') return
 
   if (!user || !token) {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY)
     window.sessionStorage.removeItem(AUTH_STORAGE_KEY)
     return
   }
 
+  const payload = JSON.stringify({
+    user,
+    token,
+  })
+
+  window.localStorage.setItem(AUTH_STORAGE_KEY, payload)
   window.sessionStorage.setItem(
     AUTH_STORAGE_KEY,
-    JSON.stringify({
-      user,
-      token,
-    }),
+    payload,
   )
 }
 

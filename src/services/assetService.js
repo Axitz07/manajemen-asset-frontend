@@ -6,6 +6,8 @@ import { loanItems } from '../stores/loanStore'
 export function getAssets() {
   return assetItems.value.map((item) => ({
     ...item,
+    asset_history: item.asset_history ?? '',
+    asset_histories: item.asset_histories ?? [],
     category_name: item.category?.name
       ?? categoryItems.value.find((category) => category.category_id === item.category_id)?.category_name
       ?? '-',

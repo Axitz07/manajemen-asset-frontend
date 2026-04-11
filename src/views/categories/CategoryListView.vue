@@ -14,6 +14,7 @@ const topCategory = computed(() =>
 const totalAssets = computed(() =>
   categories.value.reduce((total, item) => total + item.total_assets, 0),
 )
+const canDeleteCategory = (category) => category.total_assets === 0
 
 const removeCategory = async (categoryId) => {
   if (!window.confirm('Hapus kategori ini?')) return
@@ -81,7 +82,17 @@ const removeCategory = async (categoryId) => {
               <td>
                 <div class="action-group">
                   <RouterLink :to="`/categories/${item.category_id}/edit`" class="action-link edit">Edit</RouterLink>
-                  <button type="button" class="action-link delete" @click="removeCategory(item.category_id)">
+                  <button
+                    type="button"
+                    class="action-link delete"
+                    :disabled="!canDeleteCategory(item)"
+                    :title="
+                      !canDeleteCategory(item)
+                        ? 'Category ini masih dipakai asset, jadi belum bisa dihapus.'
+                        : 'Delete category'
+                    "
+                    @click="removeCategory(item.category_id)"
+                  >
                     Delete
                   </button>
                 </div>
@@ -245,6 +256,12 @@ const removeCategory = async (categoryId) => {
 
 .action-link.delete {
   color: var(--danger);
+}
+
+.action-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .btn-primary {

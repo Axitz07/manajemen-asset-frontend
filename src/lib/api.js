@@ -15,14 +15,21 @@ const readStoredToken = () => {
   if (typeof window === 'undefined') return ''
 
   try {
-    const raw = window.sessionStorage.getItem(AUTH_STORAGE_KEY)
-    if (!raw) return ''
+    const storages = [window.localStorage, window.sessionStorage]
 
-    const parsed = JSON.parse(raw)
-    return String(parsed?.token || '').trim()
+    for (const storage of storages) {
+      const raw = storage.getItem(AUTH_STORAGE_KEY)
+      if (!raw) continue
+
+      const parsed = JSON.parse(raw)
+      const token = String(parsed?.token || '').trim()
+      if (token) return token
+    }
   } catch {
     return ''
   }
+
+  return ''
 }
 
 const buildHeaders = (options = {}) => {

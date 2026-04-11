@@ -1,6 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AppBadge from '../../components/common/AppBadge.vue'
 import QrCodeCard from '../../components/qr/QrCodeCard.vue'
 import QrScannerPanel from '../../components/qr/QrScannerPanel.vue'
@@ -11,12 +11,28 @@ import { getLoans } from '../../services/loanService'
 import { getMaintenances } from '../../services/maintenanceService'
 
 const router = useRouter()
+const route = useRoute()
 const assets = computed(() => getAssets())
 const histories = computed(() => getAssetHistories())
 const loans = computed(() => getLoans())
 const maintenances = computed(() => getMaintenances())
 const isAdmin = computed(() => currentUser.value?.role === 'admin')
-const scannedCode = ref(assets.value.find((item) => item.status === 'Borrowed')?.qr_code ?? assets.value[0]?.qr_code ?? '')
+const scannedCode = ref('')
+
+watch(
+  [assets, () => route.query.asset_id],
+  ([items]) => {
+    const preferredAssetId = String(route.query.asset_id || '')
+    const preferredAsset = items.find((item) => item.asset_id === preferredAssetId)
+    const borrowedAsset = items.find((item) => item.status === 'Borrowed')
+    const fallbackAsset = items[0] ?? null
+
+    if (!scannedCode.value || !items.some((item) => item.qr_code === scannedCode.value)) {
+      scannedCode.value = preferredAsset?.qr_code ?? borrowedAsset?.qr_code ?? fallbackAsset?.qr_code ?? ''
+    }
+  },
+  { immediate: true },
+)
 const scannedAsset = computed(() => assets.value.find((item) => item.qr_code === scannedCode.value) ?? assets.value[0] ?? null)
 const relatedHistory = computed(() =>
   histories.value.filter((item) => item.asset_id === scannedAsset.value?.asset_id).slice(0, 4),

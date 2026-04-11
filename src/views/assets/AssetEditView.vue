@@ -1,25 +1,41 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { findAssetById, updateAsset } from '../../stores/assetStore'
 import { categoryItems } from '../../stores/categoryStore'
 
 const route = useRoute()
 const router = useRouter()
-const asset = findAssetById(route.params.id)
+const asset = computed(() => findAssetById(route.params.id))
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 
 const form = reactive({
-  asset_name: asset?.asset_name ?? '',
-  asset_code: asset?.asset_code ?? '',
-  category_id: asset?.category_id ?? '',
-  condition: asset?.condition ?? 'Good',
-  status: asset?.status ?? 'Available',
+  asset_name: '',
+  asset_code: '',
+  category_id: '',
+  condition: 'Good',
+  status: 'Available',
+  qr_code_path: '',
 })
 
+watch(
+  asset,
+  (item) => {
+    if (!item) return
+
+    form.asset_name = item.asset_name ?? ''
+    form.asset_code = item.asset_code ?? ''
+    form.category_id = item.category_id ?? ''
+    form.condition = item.condition ?? 'Good'
+    form.status = item.status ?? 'Available'
+    form.qr_code_path = item.qr_code_path ?? ''
+  },
+  { immediate: true },
+)
+
 const submitForm = async () => {
-  if (!asset) return
+  if (!asset.value) return
 
   errorMessage.value = ''
   isSubmitting.value = true

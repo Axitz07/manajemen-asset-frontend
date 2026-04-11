@@ -15,6 +15,7 @@ const form = reactive({
   category_id: categoryItems.value[0]?.category_id ?? '',
   condition: 'Good',
   status: 'Available',
+  qr_code_path: '',
 })
 
 watch(

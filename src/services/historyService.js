@@ -1,7 +1,29 @@
+import { getAssets } from './assetService'
 import { getLoans } from './loanService'
 import { getMaintenances } from './maintenanceService'
 
 export function getAssetHistories() {
+  const assetHistories = getAssets().flatMap((asset) =>
+    (asset.asset_histories || []).map((history) => ({
+      history_id: history.id,
+      asset_id: history.asset_id || asset.asset_id,
+      asset_name: asset.asset_name,
+      asset_code: asset.asset_code,
+      old_status: history.old_status === 'maintenance'
+        ? 'Maintenance'
+        : history.old_status === 'broken'
+          ? 'Broken'
+          : 'Available',
+      new_status: history.new_status === 'maintenance'
+        ? 'Maintenance'
+        : history.new_status === 'broken'
+          ? 'Broken'
+          : 'Available',
+      note: history.note || 'Asset history',
+      changed_at: history.created_at,
+    })),
+  )
+
   const loanHistory = getLoans().map((item) => ({
     history_id: `loan-${item.loan_id}`,
     asset_id: item.asset_id,
@@ -27,7 +49,7 @@ export function getAssetHistories() {
     changed_at: item.end_date || item.maintenance_date || item.created_at,
   }))
 
-  return [...loanHistory, ...maintenanceHistory].sort(
+  return [...assetHistories, ...loanHistory, ...maintenanceHistory].sort(
     (a, b) => new Date(b.changed_at || 0).getTime() - new Date(a.changed_at || 0).getTime(),
   )
 }

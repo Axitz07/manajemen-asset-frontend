@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAssets } from '../../services/assetService'
 import { createMaintenance } from '../../stores/maintenanceStore'
@@ -9,14 +9,26 @@ const router = useRouter()
 const errorMessage = ref('')
 
 const assets = computed(() => getAssets())
-const defaultAsset = assets.value.find((item) => item.asset_id === String(route.query.asset_id || '')) ?? assets.value[0]
 
 const form = reactive({
-  asset_id: defaultAsset?.asset_id ?? '',
+  asset_id: '',
   issue_description: route.query.issue ? String(route.query.issue) : '',
   maintenance_date: new Date().toISOString().slice(0, 10),
   maintenance_status: 'Pending',
 })
+
+watch(
+  [assets, () => route.query.asset_id],
+  ([items]) => {
+    const requestedAssetId = String(route.query.asset_id || '')
+    const requestedAsset = items.find((item) => item.asset_id === requestedAssetId)
+
+    if (!form.asset_id || !items.some((item) => item.asset_id === form.asset_id)) {
+      form.asset_id = requestedAsset?.asset_id ?? items[0]?.asset_id ?? ''
+    }
+  },
+  { immediate: true },
+)
 
 const submitForm = async () => {
   errorMessage.value = ''
@@ -45,6 +57,7 @@ const submitForm = async () => {
         <label class="field">
           <span>Asset</span>
           <select v-model="form.asset_id" required>
+            <option v-if="!assets.length" value="">Belum ada asset tersedia</option>
             <option v-for="item in assets" :key="item.asset_id" :value="item.asset_id">
               {{ item.asset_code }} - {{ item.asset_name }}
             </option>

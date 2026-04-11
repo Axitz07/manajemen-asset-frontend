@@ -5,6 +5,7 @@ import AppBadge from '../../components/common/AppBadge.vue'
 import { deleteAsset } from '../../stores/assetStore'
 import { currentUser } from '../../stores/authStore'
 import { getAssets } from '../../services/assetService'
+import { maintenanceItems } from '../../stores/maintenanceStore'
 import { loanItems } from '../../stores/loanStore'
 
 const searchQuery = ref('')
@@ -31,7 +32,7 @@ const canManageAssets = computed(() => currentUser.value?.role === 'admin')
 const canDeleteAsset = (asset) =>
   canManageAssets.value &&
   asset.status === 'Available' &&
-  (asset.maintenances?.length || 0) === 0 &&
+  !maintenanceItems.value.some((maintenance) => maintenance.asset_id === asset.asset_id) &&
   !loanItems.value.some((loan) => loan.asset_id === asset.asset_id)
 
 const statusTone = (status) => {
@@ -397,6 +398,12 @@ const removeAsset = async (assetId) => {
 
 .action-link.delete {
   color: var(--danger);
+}
+
+.action-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .action-link.delete:disabled {

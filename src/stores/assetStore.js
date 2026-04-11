@@ -11,6 +11,8 @@ const assetStatusToApi = {
 
 const assetStatusFromApi = {
   available: 'Available',
+  active: 'Available',
+  borrowed: 'Borrowed',
   broken: 'Broken',
   maintenance: 'Maintenance',
 }
@@ -39,7 +41,10 @@ const normalizeAsset = (item) => ({
   updated_at: item.updated_at,
   category: item.category || null,
   maintenances: item.maintenances || [],
-  qr_code: item.qr_code || item.asset_code,
+  asset_history: item.asset_history || '',
+  asset_histories: item.asset_histories || [],
+  qr_code_path: item.qr_code || '',
+  qr_code: item.asset_code || item.qr_code || '',
   purchase_year: null,
   asset_image: '',
 })
@@ -71,7 +76,7 @@ export async function createAsset(payload) {
       category_id: payload.category_id,
       condition: conditionToApi[payload.condition] || String(payload.condition || '').toLowerCase(),
       status: assetStatusToApi[payload.status] || String(payload.status || '').toLowerCase(),
-      qr_code: payload.qr_code?.trim() || payload.asset_code?.trim() || `QR-${Date.now()}`,
+      qr_code: payload.qr_code_path?.trim() || payload.qr_code?.trim() || payload.asset_code?.trim() || `QR-${Date.now()}`,
     }),
   })
 
@@ -89,7 +94,7 @@ export async function updateAsset(assetId, payload) {
       category_id: payload.category_id,
       condition: conditionToApi[payload.condition] || String(payload.condition || '').toLowerCase(),
       status: assetStatusToApi[payload.status] || String(payload.status || '').toLowerCase(),
-      qr_code: payload.qr_code?.trim() || payload.asset_code?.trim() || '',
+      qr_code: payload.qr_code_path?.trim() || payload.qr_code?.trim() || payload.asset_code?.trim() || '',
     }),
   })
 

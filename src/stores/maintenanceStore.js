@@ -1,34 +1,57 @@
 import { ref } from 'vue'
 import { apiRequest } from '../lib/api'
 import { assetItems, loadAssets } from './assetStore'
-import { currentUser } from './authStore'
 
 export const maintenanceItems = ref([])
+
+const toDateOnly = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10)
+  }
+
+  return date.toISOString().slice(0, 10)
+}
 
 const normalizeMaintenance = (item) => ({
   maintenance_id: item.id,
   asset_id: item.asset_id,
-  reported_by: item.reported_by,
-  issue_description: item.description,
+  issue_description: item.issue_description,
   maintenance_status:
-    item.status === 'progress' ? 'Progress' : item.status === 'done' ? 'Done' : 'Pending',
-  raw_status: item.status,
-  maintenance_date: item.start_date,
-  end_date: item.end_date,
+    item.maintenance_status === 'progress'
+      ? 'Progress'
+      : item.maintenance_status === 'done'
+        ? 'Done'
+        : 'Pending',
+  raw_status: item.maintenance_status,
+  maintenance_date: toDateOnly(item.start_date),
+  end_date: toDateOnly(item.end_date),
   created_at: item.created_at,
   updated_at: item.updated_at,
   asset: item.asset || null,
-  user: item.user || null,
 })
 
 export async function loadMaintenances() {
-  const assets = assetItems.value.length ? assetItems.value : await loadAssets()
-  const requests = assets.map((asset) =>
-    apiRequest(`maintenances?asset_id=${asset.asset_id}&limit=1000&offset=0`).catch(() => ({ data: [] })),
-  )
-  const responses = await Promise.all(requests)
-  maintenanceItems.value = responses.flatMap((response) => (response.data || []).map(normalizeMaintenance))
+  if (!assetItems.value.length) {
+    await loadAssets()
+  }
+
+  const response = await apiRequest('maintenances?limit=1000&offset=0')
+  maintenanceItems.value = uniqueByMaintenanceId((response.data || []).map(normalizeMaintenance))
   return maintenanceItems.value
+}
+
+const uniqueByMaintenanceId = (items) => {
+  const map = new Map()
+
+  items.forEach((item) => {
+    if (item?.maintenance_id) {
+      map.set(item.maintenance_id, item)
+    }
+  })
+
+  return [...map.values()]
 }
 
 export async function createMaintenance(payload) {
@@ -36,9 +59,8 @@ export async function createMaintenance(payload) {
     method: 'POST',
     body: JSON.stringify({
       asset_id: payload.asset_id,
-      reported_by: currentUser.value?.id || '',
-      description: payload.issue_description,
-      status:
+      issue_description: payload.issue_description,
+      maintenance_status:
         payload.maintenance_status === 'Done'
           ? 'done'
           : payload.maintenance_status === 'Progress'
@@ -61,9 +83,8 @@ export async function updateMaintenance(maintenanceId, payload) {
     method: 'PUT',
     body: JSON.stringify({
       asset_id: payload.asset_id,
-      reported_by: payload.reported_by,
-      description: payload.issue_description,
-      status:
+      issue_description: payload.issue_description,
+      maintenance_status:
         payload.maintenance_status === 'Done'
           ? 'done'
           : payload.maintenance_status === 'Progress'
